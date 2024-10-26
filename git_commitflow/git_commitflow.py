@@ -21,7 +21,6 @@
 import argparse
 import logging
 import os
-import re
 import shlex
 import subprocess
 import sys
@@ -31,7 +30,7 @@ from typing import List, Union
 from colorama import Fore
 
 from .cache_file import CacheFile
-from .readline_manager import ReadlineManager
+from .helpers import remove_matching_filenames, text_input
 
 # TODO: Add configuration file for the following options:
 # GIT_DIFF_OPTS = ['--', ':!*.asc', ':!*vault.yaml', ':!*vault.yml']
@@ -43,33 +42,6 @@ MIN_COMMIT_MESSAGE_SIZE = 1
 GIT_COMMITFLOW_DATA_DIR = Path("~/.config/git-commitflow").expanduser()
 CACHE_FILE = GIT_COMMITFLOW_DATA_DIR / "repo-data.json"
 IGNORE_FILENAMES_REGEX: List[str] = []
-
-
-def remove_matching_filenames(filenames: List[str],
-                              patterns: List[str]) -> List[str]:
-    """
-    Remove filenames that match any of the given regex patterns.
-
-    :param filenames: A list of filenames to filter.
-    :param patterns: A list of regex patterns to match filenames against.
-    :return: A list of filenames that do not match any of the patterns.
-    """
-    compiled_patterns = [re.compile(pattern) for pattern in patterns]
-    filtered_filenames = [filename for filename in filenames
-                          if not any(pattern.match(os.path.basename(filename))
-                                     for pattern in compiled_patterns)]
-    return filtered_filenames
-
-
-def text_input(prompt: str,
-               prompt_history_file: Union[os.PathLike, str, None] = "",
-               default: str = "") -> str:
-    prompt_history_file = str(prompt_history_file) + ".rl"
-    logging.debug("[DEBUG] History file: %s", str(prompt_history_file))
-    readline_manager = ReadlineManager(prompt_history_file)
-    user_input = readline_manager.readline_input(prompt=prompt,
-                                                 default=default)
-    return user_input
 
 
 class GitCommitFlow:
