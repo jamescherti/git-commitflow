@@ -239,9 +239,12 @@ class GitCommitFlow:
             return 1
 
         if subprocess.call(["git", "merge", "--ff-only"]) != 0:
+            git_pull_cmd = ["git", "pull", "--rebase", "--autostash"]
             if self.confirm("Git failed to merge fast-forward."
-                            "Do you want to run 'git pull --rebase'"):
-                if subprocess.call(["git", "pull", "--rebase"]) != 0:
+                            "Do you want to run '" +
+                            subprocess.list2cmdline(git_pull_cmd) +
+                            "'"):
+                if subprocess.call(git_pull_cmd) != 0:
                     print("Error with 'git pull --rebase'...")
                     return 1
 
