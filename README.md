@@ -1,4 +1,4 @@
-# git-commitflow - A git add/diff/commit/push helper
+# git-commitflow - A Git add/diff/commit/push Helper
 
 The `git-commitflow` is command-line interface that assists with the Git operations of adding (`git add`), viewing differences (`git diff`), committing changes (`git commit`), and pushing updates (`git push`).
 
