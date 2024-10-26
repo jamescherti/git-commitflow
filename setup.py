@@ -41,8 +41,13 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Operating System :: POSIX :: Other",
         "Programming Language :: Python :: 3",
+        "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Software Development :: Version Control :: Git",
         "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "Natural Language :: English",
+        "Operating System :: MacOS",
+        "Operating System :: Microsoft :: Windows",
     ],
     entry_points={
         "console_scripts": [
