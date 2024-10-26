@@ -2,6 +2,11 @@
 
 The `git-submit` command-line tool enhances the process of staging (`git add`), diff (`git diff`), committing (`git commit`), and pushing (`git push`) in a Git repository.
 
+## Requirements
+
+- git >= 2.6
+- Python and pip
+
 ## Installation
 
 Here is how to install `git-commitflow` using [pip](https://pypi.org/project/pip/):
