@@ -11,7 +11,7 @@ The `git-submit` command-line tool enhances the process of staging (`git add`), 
 
 Here is how to install `git-commitflow` using [pip](https://pypi.org/project/pip/):
 ```
-sudo pip install git+https://github.com/jamescherti/git-commitflow
+sudo pip install git-commitflow
 ```
 
 The pip command above will install the `git-commitflow` executable in the directory `~/.local/bin/`.
@@ -66,3 +66,4 @@ You should have received a copy of the GNU General Public License along with thi
 ## Links
 
 - [git-commitflow @GitHub](https://github.com/jamescherti/git-commitflow)
+- [git-commitflow @PyPI](https://pypi.org/project/git-commitflow/)
