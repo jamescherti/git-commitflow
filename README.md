@@ -1,6 +1,6 @@
 # git-commitflow - A git add/diff/commit/push helper
 
-The `git-submit` command-line tool automates and enhances the process of staging (`git add`), diff (`git diff`), committing (`git commit`), and pushing (`git push`) in a Git repository.
+The `git-submit` command-line tool enhances the process of staging (`git add`), diff (`git diff`), committing (`git commit`), and pushing (`git push`) in a Git repository.
 
 ## Installation
 
@@ -33,7 +33,7 @@ If you also wish to push the changes, you can use the `--push` option:
 git commitflow --push
 ```
 
-This will automatically git add, diff, commit, push your changes to the remote repository after the commit.
+This will git add, diff, commit, push your changes to the remote repository after the commit.
 
 ### Command-line arguments
 
