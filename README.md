@@ -55,6 +55,18 @@ options:
   -r, --recursive  Apply git-commitflow to all submodules
 ```
 
+### Git configuration alias
+
+To enhance your workflow, add the following aliases to your `~/.gitconfig` file:
+
+```ini
+[alias]
+ci = commitflow
+cip = commitflow --push
+```
+
+With these aliases, you can conveniently use the commands `git ci` to commit changes and `git cip` to commit and push in a single step.
+
 ## License
 
 Copyright (c) 2020-2024 [James Cherti](https://www.jamescherti.com)
