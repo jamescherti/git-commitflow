@@ -33,11 +33,16 @@ from typing import Any, List, Optional, Set, Union
 import colorama
 from colorama import Fore
 
-GIT_DIFF_OPTS = ['--', ':!*.asc', ':!*vault.yaml', ':!*vault.yml']
-MIN_COMMIT_MESSAGE_SIZE = 6
-CACHE_DIR = Path("~/.config/git-ci").expanduser()
+# TODO: Add configuration file for the following options:
+# GIT_DIFF_OPTS = ['--', ':!*.asc', ':!*vault.yaml', ':!*vault.yml']
+# MIN_COMMIT_MESSAGE_SIZE = 6
+# IGNORE_FILENAMES_REGEX = ["^flycheck_", "^flymake_"]
+
+GIT_DIFF_OPTS = []
+MIN_COMMIT_MESSAGE_SIZE = 1
+CACHE_DIR = Path("~/.config/git-commitflow").expanduser()
 CACHE_FILE = CACHE_DIR / "repo-data.json"
-IGNORE_FILENAMES_REGEX = ["^flycheck_", "^flymake_"]
+IGNORE_FILENAMES_REGEX = []
 
 
 def remove_matching_filenames(filenames: List[str],
@@ -469,7 +474,7 @@ class GitCommit:
 
         if git_common_dir:
             prompt_history_file = \
-                Path(git_common_dir).joinpath("git-ci-history")
+                Path(git_common_dir).joinpath("git-commitflow-history")
 
         if self.amount_commits > 0:
             # Diff against HEAD shows both staged and unstaged changes
@@ -555,6 +560,7 @@ def command_line_interface():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                         format="%(asctime)s %(name)s: %(message)s")
     colorama.init()
+    CACHE_DIR.mkdir(parents=True)
     try:
         GitCommit().main()
     except subprocess.CalledProcessError as main_proc_err:
