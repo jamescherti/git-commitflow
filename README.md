@@ -55,6 +55,8 @@ options:
   -r, --recursive  Apply git-commitflow to all submodules
 ```
 
+## Customizations
+
 ### Git configuration alias
 
 To enhance your workflow, add the following aliases to your `~/.gitconfig` file:
