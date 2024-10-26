@@ -13,6 +13,8 @@ The pip command above will install the `git-commitflow` executable in the direct
 
 ## Usage
 
+### Example usage
+
 To use the tool within your Git repository, run:
 
 ```bash
@@ -32,6 +34,19 @@ git commitflow --push
 ```
 
 This will automatically git add, diff, commit, push your changes to the remote repository after the commit.
+
+### Command-line arguments
+
+```
+usage: git-commitflow [--option] [args]
+
+Readline manager.
+
+options:
+  -h, --help       show this help message and exit
+  -p, --push       Git push after a successful commit
+  -r, --recursive  Apply git-commitflow to all submodules
+```
 
 ## License
 

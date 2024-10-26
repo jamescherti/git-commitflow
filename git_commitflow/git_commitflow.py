@@ -106,7 +106,7 @@ class GitCommitFlow:
             default=False,
             action="store_true",
             required=False,
-            help="Execute this script against all submodules",
+            help="Apply git-commitflow to all submodules",
         )
 
         return parser.parse_args()
