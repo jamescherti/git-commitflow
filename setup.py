@@ -46,7 +46,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "git-commitflow=git_commitflow.__init__:command_line_interface",
+            "git-commitflow=git_commitflow.__init__:git_commitflow_cli",
         ],
     },
 )

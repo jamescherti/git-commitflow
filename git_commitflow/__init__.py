@@ -38,11 +38,11 @@ from colorama import Fore
 # MIN_COMMIT_MESSAGE_SIZE = 6
 # IGNORE_FILENAMES_REGEX = ["^flycheck_", "^flymake_"]
 
-GIT_DIFF_OPTS = []
+GIT_DIFF_OPTS: List[str] = []
 MIN_COMMIT_MESSAGE_SIZE = 1
 CACHE_DIR = Path("~/.config/git-commitflow").expanduser()
 CACHE_FILE = CACHE_DIR / "repo-data.json"
-IGNORE_FILENAMES_REGEX = []
+IGNORE_FILENAMES_REGEX: List[str] = []
 
 
 def remove_matching_filenames(filenames: List[str],
@@ -555,7 +555,7 @@ class GitCommit:
             return bool(answer == "y")
 
 
-def command_line_interface():
+def git_commitflow_cli():
     """The git-commitflow command-line interface."""
     logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                         format="%(asctime)s %(name)s: %(message)s")
