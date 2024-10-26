@@ -1,4 +1,4 @@
-# git-commitflow - A git add/commit/push helper
+# git-commitflow - A git add/diff/commit/push helper
 
 The `git-submit` command-line tool automates and enhances the process of staging (`git add`), committing (`git commit`), and pushing (`git push`) in a Git repository. It simplifies the developer workflow by combining these operations and providing features like commit message validation, submodule support, and history management.
 
@@ -10,6 +10,28 @@ sudo pip install git+https://github.com/jamescherti/git-commitflow
 ```
 
 The pip command above will install the `git-commitflow` executable in the directory `~/.local/bin/`.
+
+## Usage
+
+To use the tool within your Git repository, run:
+
+```bash
+git commitflow
+```
+
+This command will guide you through the following steps interactively:
+
+- **Stage untracked files**: Prompts you to `git add` any untracked files that haven't been staged.
+- **Review changes**: Displays a diff of your changes, allowing you to confirm whether you want to proceed with the commit.
+- **Commit changes**: Once you validate your commit message, the tool will finalize the commit.
+
+If you also wish to push the changes, you can use the `--push` option:
+
+```bash
+git commitflow --push
+```
+
+This will automatically git add, diff, commit, push your changes to the remote repository after the commit.
 
 ## License
 
