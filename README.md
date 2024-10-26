@@ -2,6 +2,8 @@
 
 The `git-commitflow` is command-line interface that assists with the Git operations of adding (`git add`), viewing differences (`git diff`), committing changes (`git commit`), and pushing updates (`git push`).
 
+One significant benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. By providing a simple command-line interface for viewing differences with `git diff`, users can carefully review modifications and ensure they are committing only the intended changes. This reduces the likelihood of including unintended files or alterations in commits, promoting a cleaner and more organized version history. Additionally, the tool simplifies the workflow for adding, committing, and pushing changes, making the overall Git experience more efficient and user-friendly.
+
 ## Requirements
 
 - git >= 2.6
