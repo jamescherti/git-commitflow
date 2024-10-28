@@ -318,7 +318,11 @@ class GitCommitFlow:
             # Diff against HEAD shows both staged and unstaged changes
             cmd = ["git", "--paginate", "diff",
                    "--diff-filter=d", "--color"] + ["HEAD"] + GIT_DIFF_OPTS
-            subprocess.check_call(cmd)
+            try:
+                subprocess.check_call(cmd)
+            except subprocess.CalledProcessError:
+                # Ignore errors
+                pass
 
         subprocess.check_call(["git", "status"])
         print(f"Git repo: {Fore.YELLOW}{self.git_repo_dir}{Fore.RESET}")
