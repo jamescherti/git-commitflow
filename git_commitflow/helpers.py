@@ -22,9 +22,19 @@
 import logging
 import os
 import re
+from pathlib import Path
 from typing import List, Union
 
 from .readline_manager import ReadlineManager
+
+
+def replace_home_with_tilde(path: os.PathLike) -> str:
+    """Replace the home directory with '~'."""
+    path_str = str(path)
+    home = str(Path.home())
+    if path_str.startswith(home):
+        return '~' + path_str[len(home):]
+    return path_str
 
 
 def remove_matching_filenames(filenames: List[str],

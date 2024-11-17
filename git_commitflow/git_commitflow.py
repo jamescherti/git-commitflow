@@ -30,7 +30,8 @@ from typing import List, Union
 from colorama import Fore
 
 from .cache_file import CacheFile
-from .helpers import remove_matching_filenames, text_input
+from .helpers import (remove_matching_filenames, replace_home_with_tilde,
+                      text_input)
 
 # TODO: Add configuration file for the following options:
 # GIT_DIFF_OPTS = ['--', ':!*.asc', ':!*vault.yaml', ':!*vault.yml']
@@ -157,8 +158,8 @@ class GitCommitFlow:
             # subprocess.check_call(["git", "show"])
 
             print()
-            print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL."
-                  + Fore.RESET)
+            print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." +
+                  Fore.RESET)
         except subprocess.CalledProcessError:
             print()
             print(Fore.RED + "[COMMIT] git commit has FAILED." + Fore.RESET)
@@ -213,9 +214,9 @@ class GitCommitFlow:
         if subprocess.call(["git", "merge", "--ff-only"]) != 0:
             git_pull_cmd = ["git", "pull", "--rebase", "--autostash"]
             if self.confirm("Git failed to merge fast-forward."
-                            "Do you want to run '"
-                            + subprocess.list2cmdline(git_pull_cmd)
-                            + "'"):
+                            "Do you want to run '" +
+                            subprocess.list2cmdline(git_pull_cmd) +
+                            "'"):
                 if subprocess.call(git_pull_cmd) != 0:
                     print("Error with 'git pull --rebase'...")
                     return 1
@@ -294,11 +295,15 @@ class GitCommitFlow:
             list_untracked_files,
             IGNORE_FILENAMES_REGEX,
         )
+        list_untracked_files = [os.path.join(self.git_repo_dir, item)
+                                for item in list_untracked_files]
         if list_untracked_files:
             print("Git repository:", self.git_repo_dir)
-            print("\nFiles:")
-            print("------")
-            print(list_untracked_files)
+            print()
+            print("Files:")
+            for untracked_file in list_untracked_files:
+                print(" ", replace_home_with_tilde(untracked_file))
+
             print()
             while True:
                 answer = input("git add? [y,n] ")
