@@ -157,8 +157,8 @@ class GitCommitFlow:
             # subprocess.check_call(["git", "show"])
 
             print()
-            print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." +
-                  Fore.RESET)
+            print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL."
+                  + Fore.RESET)
         except subprocess.CalledProcessError:
             print()
             print(Fore.RED + "[COMMIT] git commit has FAILED." + Fore.RESET)
@@ -213,9 +213,9 @@ class GitCommitFlow:
         if subprocess.call(["git", "merge", "--ff-only"]) != 0:
             git_pull_cmd = ["git", "pull", "--rebase", "--autostash"]
             if self.confirm("Git failed to merge fast-forward."
-                            "Do you want to run '" +
-                            subprocess.list2cmdline(git_pull_cmd) +
-                            "'"):
+                            "Do you want to run '"
+                            + subprocess.list2cmdline(git_pull_cmd)
+                            + "'"):
                 if subprocess.call(git_pull_cmd) != 0:
                     print("Error with 'git pull --rebase'...")
                     return 1
@@ -275,12 +275,16 @@ class GitCommitFlow:
         except IndexError:
             return ""
 
-    def _run(self, command: Union[str, List[str]]) -> List[str]:
+    def _run(self, command: Union[str, List[str]],
+             check: bool = False, text: bool = True) -> List[str]:
         if isinstance(command, str):
             command = shlex.split(command)
         result = subprocess.run(command, stdout=subprocess.PIPE,
-                                check=True, text=True)
-        return result.stdout.splitlines()
+                                check=check, text=text)
+        if text:
+            return str(result.stdout).splitlines()
+        else:
+            return []
 
     def git_add(self):
         list_untracked_files = self._run(["git", "-C", self.git_repo_dir,
