@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2020-2024 James Cherti
+# Copyright (c) 2020-2025 James Cherti
 # URL: https://github.com/jamescherti/git-commitflow
 #
 # This program is free software: you can redistribute it and/or modify it under
