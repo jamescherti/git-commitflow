@@ -20,10 +20,9 @@
 
 
 import logging
-import select
+import os
 import subprocess
 import sys
-from termios import TCIFLUSH, tcflush
 
 import colorama
 
@@ -36,11 +35,35 @@ def git_commitflow_cli():
                         format="%(asctime)s %(name)s: %(message)s")
     colorama.init()
 
-    # Check if there is any pending input in stdin without blocking
-    # If input is available, flush the stdin buffer
-    stdin, _, _ = select.select([sys.stdin], [], [], 0)
-    if stdin and sys.stdin.isatty():
-        tcflush(sys.stdin.fileno(), TCIFLUSH)
+    try:
+        import platform  # pylint: disable=import-outside-toplevel
+        if os.name == "nt":
+            import msvcrt  # pylint: disable=import-outside-toplevel
+
+            # Check if there's input in the buffer
+            while msvcrt.kbhit():
+                # Read and discard one character at a time
+                msvcrt.getch()
+        elif os.name == "posix" or platform.system() in ["Linux", "Darwin"]:
+            # For Unix-like systems, check if there's any pending input in
+            # stdin without blocking
+            import select  # pylint: disable=import-outside-toplevel
+
+            # Check if there is any pending input in stdin without blocking
+            # If input is available, flush the stdin buffer
+            stdin, _, _ = select.select([sys.stdin], [], [], 0)
+            if stdin:
+                if sys.stdin.isatty():
+                    # pylint: disable=import-outside-toplevel
+                    from termios import TCIFLUSH, tcflush
+
+                    # Flush the input buffer
+                    tcflush(sys.stdin.fileno(), TCIFLUSH)
+                else:
+                    # Read and discard input (in chunks)
+                    sys.stdin.read(1024)
+    except ImportError:
+        pass
 
     try:
         GitCommitFlow().main()
