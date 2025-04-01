@@ -20,8 +20,10 @@
 
 
 import logging
+import select
 import subprocess
 import sys
+from termios import TCIFLUSH, tcflush
 
 import colorama
 
@@ -33,6 +35,13 @@ def git_commitflow_cli():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                         format="%(asctime)s %(name)s: %(message)s")
     colorama.init()
+
+    # Check if there is any pending input in stdin without blocking
+    # If input is available, flush the stdin buffer
+    stdin, _, _ = select.select([sys.stdin], [], [], 0)
+    if stdin and sys.stdin.isatty():
+        tcflush(sys.stdin.fileno(), TCIFLUSH)
+
     try:
         GitCommitFlow().main()
     except subprocess.CalledProcessError as main_proc_err:
