@@ -381,6 +381,9 @@ class GitCommitFlow:
             except (EOFError, KeyboardInterrupt):
                 sys.exit(0)
 
+            if commit_message == "":
+                continue
+
             if len(commit_message) > 0 and \
                len(commit_message) <= MIN_COMMIT_MESSAGE_SIZE:
                 print("Error: the commit message is too short.")
