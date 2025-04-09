@@ -51,14 +51,3 @@ def remove_matching_filenames(filenames: List[str],
                           if not any(pattern.match(os.path.basename(filename))
                                      for pattern in compiled_patterns)]
     return filtered_filenames
-
-
-def text_input(prompt: str,
-               prompt_history_file: Union[os.PathLike, str, None] = "",
-               default: str = "") -> str:
-    prompt_history_file = str(prompt_history_file) + ".rl"
-    logging.debug("[DEBUG] History file: %s", str(prompt_history_file))
-    readline_manager = ReadlineManager(prompt_history_file)
-    user_input = readline_manager.readline_input(prompt=prompt,
-                                                 default=default)
-    return user_input
