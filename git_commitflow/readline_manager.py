@@ -46,28 +46,49 @@ class ReadlineSimpleCompleter:
 
 
 class ReadlineManager:
-    def __init__(self, history_file: Union[str, Path, None] = None):
+    def __init__(self, history_file: Union[str, Path, None] = None,
+                 history_length=-1):
         """Manage readline settings, history, and input."""
         self.history_file = Path(history_file) if history_file else None
         self.keywords: Set[str] = set()
+        self.history_length = history_length
+        self.history = []
+        self._init_history()
 
     def _init_history(self):
         """Initialize readline history from the specified file."""
-        if self.history_file and self.history_file.exists():
-            readline.read_history_file(self.history_file)
-            self._load_keywords_from_history()
-            logging.debug("[DEBUG] History loaded")
+        if not (self.history_file and self.history_file.exists()):
+            return
 
-    def _load_keywords_from_history(self):
-        """
-        Load and extract unique keywords from the history file for completion.
-        """
-        if self.history_file and self.history_file.exists():
-            with open(self.history_file, "r", encoding="utf-8") as file:
-                lines = file.readlines()
+        if self.history_length >= 0:
+            readline.set_history_length(self.history_length)
 
-            for line in lines:
-                self.keywords |= set(line.strip().split())
+        # History
+        readline.read_history_file(self.history_file)
+
+        # Keywords
+        # if self.history_file and self.history_file.exists():
+        #     with open(self.history_file, "r", encoding="utf-8") as file:
+        #         self.history = file.readlines()
+        #
+        #     for line in self.history:
+        #         self.keywords |= set(line.strip().split())
+
+        logging.debug("[DEBUG] History loaded")
+
+    def append_to_history(self, string):
+        self.history.append(string)
+
+        # # Truncate history
+        # if self.history_length >= 0 \
+        #         and len(self.history) > self.history_length:
+        #     self.history = self.history[:-self.history_length]
+        #     with open(self.history_file, "w", encoding="utf-8") as fhandler:
+        #         for line in self.history:
+        #             fhandler.write(f"{line}\n")
+        # else:
+        #     with open(self.history_file, "a", encoding="utf-8") as fhandler:
+        #         fhandler.write(f"{string}\n")
 
     def _save_history(self):
         """Save the current readline history to the specified file."""
@@ -85,7 +106,6 @@ class ReadlineManager:
         Prompt for input with optional readline autocompletion and command
         history saving.
         """
-        self._init_history()
         all_keywords = self.keywords | \
             set(complete_with if complete_with else {})
         logging.debug("[DEBUG] Keywords: %s", str(all_keywords))

@@ -30,8 +30,8 @@ from typing import List, Union
 from colorama import Fore
 
 from .cache_file import CacheFile
-from .helpers import (remove_matching_filenames, replace_home_with_tilde,
-                      text_input)
+from .helpers import remove_matching_filenames, replace_home_with_tilde
+from .readline_manager import ReadlineManager
 
 # TODO: Add configuration file for the following options:
 # GIT_DIFF_OPTS = ['--', ':!*.asc', ':!*vault.yaml', ':!*vault.yml']
@@ -43,6 +43,7 @@ MIN_COMMIT_MESSAGE_SIZE = 1
 GIT_COMMITFLOW_DATA_DIR = Path("~/.config/git-commitflow").expanduser()
 CACHE_FILE = GIT_COMMITFLOW_DATA_DIR / "repo-data.json"
 IGNORE_FILENAMES_REGEX: List[str] = []
+HISTORY_LENGTH = 256
 
 
 class GitCommitFlow:
@@ -58,6 +59,22 @@ class GitCommitFlow:
         self.cache = CacheFile(CACHE_FILE)
 
         self.branch = self._get_first_line_cmd("git symbolic-ref --short HEAD")
+
+        # History
+        self.prompt_history_file = None
+
+        git_common_dir = \
+            self._get_first_line_cmd("git rev-parse --git-common-dir").strip()
+        if git_common_dir:
+            self.prompt_history_file = \
+                Path(git_common_dir).joinpath("git-commitflow-history.rl")
+
+            logging.debug(
+                "[DEBUG] History file: %s", str(
+                    self.prompt_history_file))
+            self.readline_manager = \
+                ReadlineManager(history_file=self.prompt_history_file,
+                                history_length=HISTORY_LENGTH)
 
     def _parse_args(self):
         """Parse command-line arguments."""
@@ -315,14 +332,6 @@ class GitCommitFlow:
                     break
 
     def diff_and_get_commit_message(self) -> str:
-        prompt_history_file = None
-        git_common_dir = \
-            self._get_first_line_cmd("git rev-parse --git-common-dir").strip()
-
-        if git_common_dir:
-            prompt_history_file = \
-                Path(git_common_dir).joinpath("git-commitflow-history")
-
         if self.amount_commits > 0:
             # Diff against HEAD shows both staged and unstaged changes
             cmd = ["git", "--paginate", "diff",
@@ -355,29 +364,22 @@ class GitCommitFlow:
                     self._run("git --no-pager log -1 --pretty=%B")).rstrip()
             print(Fore.YELLOW + previous_message + Fore.RESET)
 
-        commit_message = self.prompt_git_commit_message(
-            commit_message,
-            prompt_history_file=prompt_history_file,
-        )
+        commit_message = self.prompt_git_commit_message(commit_message)
 
         # TODO: move this to a function
         logging.debug("[DEBUG] Previous message: %s", previous_message)
         logging.debug("[DEBUG] Commit message: %s", commit_message)
-        if prompt_history_file and not commit_message and previous_message:
-            with open(prompt_history_file, "a", encoding="utf-8") as fhandler:
-                fhandler.write(f"{previous_message}\n")
+        # if self.prompt_history_file and not commit_message and previous_message:
+        #     self.readline_manager.append_to_history(previous_message)
 
         return commit_message
 
-    def prompt_git_commit_message(
-            self, commit_message: str,
-            prompt_history_file: Union[str, None, os.PathLike]) -> str:
+    def prompt_git_commit_message(self, commit_message: str) -> str:
         while True:
             try:
-                commit_message = text_input(
-                    "Commit message: ",
-                    prompt_history_file=prompt_history_file,
-                )
+                commit_message = \
+                    self.readline_manager.readline_input(
+                        prompt="Commit message: ")
             except (EOFError, KeyboardInterrupt):
                 sys.exit(0)
 
