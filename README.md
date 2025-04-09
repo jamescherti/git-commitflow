@@ -1,8 +1,21 @@
-# git-commitflow - A Git add/diff/commit/push Helper
+# git-commitflow - A Git Add, Diff, Commit, and Push Helper
+![License](https://img.shields.io/github/license/jamescherti/outline-indent.el)
 
-The `git-commitflow` is command-line interface that assists with the Git operations of adding (`git add`), viewing differences (`git diff`), committing changes (`git commit`), and pushing updates (`git push`).
+## Introduction
 
-One significant benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. By providing a simple command-line interface for viewing differences with `git diff`, users can carefully review modifications and ensure they are committing only the intended changes. This reduces the likelihood of including unintended files or alterations in commits, promoting a cleaner and more organized version history. Additionally, the tool simplifies the workflow for adding, committing, and pushing changes, making the overall Git experience more efficient and user-friendly.
+The `git-commitflow` tool is an interactive command-line interface that assists with the Git operations.
+
+Running `git-commitflow` guides the user through the following interactive steps:
+- Prompting the user to add files (`git add`),
+- Displaying differences to ensure accuracy and prevent mistakes before committing (`git diff`),
+- Prompting the user to enter a commit message and then committing the changes (`git commit`),
+- Optional (`-p` flag): Pushing updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference. This reduces unnecessary pushes.
+
+One significant benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. This reduces the likelihood of including unintended files or alterations in commits, promoting a cleaner and more organized version history.
+
+When prompted for a commit message, the user can press the up arrow to quickly access previous messages, thanks to the readline prompt history.
+
+Additionally, the tool simplifies the workflow for adding, committing, and pushing changes, making the overall Git experience more efficient and user-friendly.
 
 ## Requirements
 
@@ -39,6 +52,8 @@ If you also wish to push the changes, you can use the `--push` option:
 ```bash
 git commitflow --push
 ```
+
+(The references are pushed only if they have not been pushed previously. The `git-commitflow` tool keeps track of the references that have been pushed, preventing the same reference from being pushed multiple times. This minimizes redundant pushes.)
 
 This will git add, diff, commit, push your changes to the remote repository after the commit.
 
