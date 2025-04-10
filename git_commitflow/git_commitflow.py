@@ -53,7 +53,9 @@ class GitCommitFlow:
         self.args = self._parse_args()
 
         self.git_repo_dir = None
-        self.find_git_repo_dir()
+
+        self.git_repo_dir = None
+        self.find_git_repo_dir()  # Update self.git_repo_dir
 
         self.amount_commits = self.count_commits()
         self.cache = CacheFile(CACHE_FILE)
@@ -285,7 +287,8 @@ class GitCommitFlow:
     def find_git_repo_dir(self):
         try:
             self.git_repo_dir = Path(
-                self._get_first_line_cmd("git rev-parse --show-toplevel")
+                self._get_first_line_cmd("git rev-parse --show-toplevel",
+                                         check=True)
             )
         except subprocess.CalledProcessError as proc_err:
             print(f"Error: {proc_err}", file=sys.stderr)
@@ -299,8 +302,8 @@ class GitCommitFlow:
     def count_commits(self):
         return len(self._run("git rev-list --all --count"))
 
-    def _get_first_line_cmd(self, cmd) -> str:
-        output = self._run(cmd)
+    def _get_first_line_cmd(self, cmd, **kwargs) -> str:
+        output = self._run(cmd, **kwargs)
         try:
             return output[0]
         except IndexError:
