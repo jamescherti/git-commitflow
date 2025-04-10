@@ -139,6 +139,9 @@ class GitCommitFlow:
             git_commit_wrapper_recursive = 0
 
         if self.args.recursive or git_commit_wrapper_recursive:
+            if not (self.git_repo_dir / ".gitmodules").is_file():
+                return
+
             git_ci_script = Path(__file__).absolute()
             print(f"{Fore.LIGHTYELLOW_EX}[SUBMODULE FORREACH] "
                   f"{self.git_repo_dir}{Fore.RESET}")
