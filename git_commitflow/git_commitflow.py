@@ -156,31 +156,44 @@ class GitCommitFlow:
               f"{self.git_repo_dir}{Fore.RESET}")
         git_commit_opts = ["-a"]
 
-        commit_message = self.diff_and_get_commit_message()
-        if commit_message:
-            git_commit_opts.extend(["-m", commit_message])
-            print(f"Commit message: {commit_message}")
-        else:
-            git_commit_opts.extend(["--reset-author"])
-            if self.amount_commits > 0:
-                # Reuse the commit message of the previous commit
-                git_commit_opts.extend(["--reuse-message=HEAD"])
-
-        print("[RUN] git commit", " ".join(git_commit_opts))
+        use_git_commit = False
         try:
-            subprocess.check_call(["git", "commit"] + git_commit_opts)
+            commit_message = self.diff_and_get_commit_message()
+        except EOFError:
+            use_git_commit = True
 
-            # TODO: maybe git show without a pager?
-            # print()
-            # subprocess.check_call(["git", "show"])
+        if use_git_commit:
+            cmd = ["git", "commit", "-a"]
+            print("[RUN] ", subprocess.list2cmdline(cmd))
+            subprocess.call(cmd)
+        else:
+            if commit_message:
+                git_commit_opts.extend(["-m", commit_message])
+                print(f"Commit message: {commit_message}")
+            else:
+                git_commit_opts.extend(["--reset-author"])
+                if self.amount_commits > 0:
+                    # Reuse the commit message of the previous commit
+                    git_commit_opts.extend(["--reuse-message=HEAD"])
 
-            print()
-            print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." +
-                  Fore.RESET)
-        except subprocess.CalledProcessError:
-            print()
-            print(Fore.RED + "[COMMIT] git commit has FAILED." + Fore.RESET)
-            return 1
+            print("[RUN] git commit", " ".join(git_commit_opts))
+            try:
+                subprocess.check_call(["git", "commit"] + git_commit_opts)
+
+                # TODO: maybe git show without a pager?
+                # print()
+                # subprocess.check_call(["git", "show"])
+
+                print()
+                print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." +
+                      Fore.RESET)
+            except subprocess.CalledProcessError:
+                print()
+                print(
+                    Fore.RED +
+                    "[COMMIT] git commit has FAILED." +
+                    Fore.RESET)
+                return 1
 
         return 0
 
@@ -380,7 +393,7 @@ class GitCommitFlow:
                 commit_message = \
                     self.readline_manager.readline_input(
                         prompt="Commit message: ")
-            except (EOFError, KeyboardInterrupt):
+            except KeyboardInterrupt:
                 sys.exit(0)
 
             if commit_message == "":
