@@ -99,9 +99,7 @@ class ReadlineManager:
     def readline_input(self, prompt: str,
                        default: str = "",
                        required: bool = False,
-                       complete_with: Union[List[str], None] = None,
-                       quit_on_eof: bool = True,
-                       quit_on_ctrlc: bool = True) -> str:
+                       complete_with: Union[List[str], None] = None) -> str:
         """
         Prompt for input with optional readline autocompletion and command
         history saving.
@@ -121,24 +119,13 @@ class ReadlineManager:
             save_history = False
             try:
                 while True:
-                    try:
-                        value = input(prompt)
-                        if not value and required and default is None:
-                            print("Error: a value is required")
-                            continue
+                    value = input(prompt)
+                    if not value and required and default is None:
+                        print("Error: a value is required")
+                        continue
 
-                        save_history = True
-                        break
-                    except EOFError:
-                        if quit_on_eof:
-                            print()
-                            print("Interrupted.")
-                            sys.exit(0)
-                    except KeyboardInterrupt:
-                        if quit_on_ctrlc:
-                            print()
-                            print("Interrupted.")
-                            sys.exit(0)
+                    save_history = True
+                    break
             finally:
                 if save_history and self.history_file:
                     self._save_history()

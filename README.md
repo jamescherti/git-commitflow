@@ -13,7 +13,7 @@ Running `git-commitflow` guides the user through the following interactive steps
 
 One significant benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. This reduces the likelihood of including unintended files or alterations in commits, promoting a cleaner and more organized version history.
 
-When prompted for a commit message, the user can press the up arrow to quickly access previous messages, thanks to the readline prompt history.
+When prompted for a commit message, the user can press the up arrow to quickly access previous messages, utilizing the readline prompt history. Additionally, pressing Ctrl-d will open the Git editor, similar to the behavior when executing `git commit -a`.
 
 Additionally, the tool simplifies the workflow for adding, committing, and pushing changes, making the overall Git experience more efficient and user-friendly.
 
