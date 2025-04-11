@@ -42,41 +42,38 @@ GIT_DIFF_OPTS: List[str] = []
 MIN_COMMIT_MESSAGE_SIZE = 1
 GIT_COMMITFLOW_DATA_DIR = Path("~/.config/git-commitflow").expanduser()
 CACHE_FILE = GIT_COMMITFLOW_DATA_DIR / "repo-data.json"
-IGNORE_FILENAMES_REGEX: List[str] = []
+IGNORE_FILENAMES_REGEX: list = []
 HISTORY_LENGTH = 256
 
 
 class GitCommitFlow:
     def __init__(self):
+        self.args = self._parse_args()
         GIT_COMMITFLOW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-        self.args = self._parse_args()
-
-        self.git_repo_dir = None
-
-        self.git_repo_dir = None
-        self.find_git_repo_dir()  # Update self.git_repo_dir
-
-        self.amount_commits = self.count_commits()
+        self.git_repo_dir = self._find_git_repo_dir()
+        self.branch = self._get_first_line_cmd("git symbolic-ref --short HEAD")
+        self.amount_commits = self._count_commits()
+        self.readline_manager = self._init_prompt_and_history()
         self.cache = CacheFile(CACHE_FILE)
 
-        self.branch = self._get_first_line_cmd("git symbolic-ref --short HEAD")
-
+    def _init_prompt_and_history(self):
         # History
-        self.prompt_history_file = None
-
-        git_common_dir = \
+        prompt_history_file = None
+        dot_git_dir = \
             self._get_first_line_cmd("git rev-parse --git-common-dir").strip()
-        if git_common_dir:
-            self.prompt_history_file = \
-                Path(git_common_dir).joinpath("git-commitflow-history.rl")
+        if not dot_git_dir:
+            print("Error: The .git directory could not be located",
+                  file=sys.stderr)
+            sys.exit(1)
 
-            logging.debug(
-                "[DEBUG] History file: %s", str(
-                    self.prompt_history_file))
-            self.readline_manager = \
-                ReadlineManager(history_file=self.prompt_history_file,
-                                history_length=HISTORY_LENGTH)
+        prompt_history_file = \
+            Path(dot_git_dir).joinpath("git-commitflow-history.rl")
+
+        logging.debug("[DEBUG] History file: %s", str(prompt_history_file))
+
+        return ReadlineManager(history_file=prompt_history_file,
+                               history_length=HISTORY_LENGTH)
 
     def _parse_args(self):
         """Parse command-line arguments."""
@@ -89,7 +86,11 @@ class GitCommitFlow:
             default=False,
             action="store_true",
             required=False,
-            help="Git push after a successful commit",
+            help=("Git push after a successful commit. (The references are "
+                  "pushed only if they have not been pushed previously. The "
+                  "git-commitflow tool keeps track of the references that "
+                  "have been pushed, preventing the same reference from being "
+                  "pushed multiple times. This minimizes redundant pushes.)"),
         )
 
         parser.add_argument(
@@ -185,10 +186,6 @@ class GitCommitFlow:
             try:
                 subprocess.check_call(["git", "commit"] + git_commit_opts)
 
-                # TODO: maybe git show without a pager?
-                # print()
-                # subprocess.check_call(["git", "show"])
-
                 print()
                 print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." +
                       Fore.RESET)
@@ -207,7 +204,10 @@ class GitCommitFlow:
         # Load cache
         # --------------
         remote_url = self._get_first_line_cmd("git ls-remote  --get-url")
-        branch = self.branch
+
+        # ------------------------
+        # Init commit refs (cache)
+        # ------------------------
         git_push_commit_refs = self.cache.get("git_push_commit_refs", {})
 
         try:
@@ -216,14 +216,14 @@ class GitCommitFlow:
             git_push_commit_refs[remote_url] = {}
 
         try:
-            git_push_commit_refs[remote_url][branch]
+            git_push_commit_refs[remote_url][self.branch]
         except KeyError:
-            git_push_commit_refs[remote_url][branch] = ""
+            git_push_commit_refs[remote_url][self.branch] = ""
 
         commit_ref = \
             self._get_first_line_cmd("git rev-parse --verify HEAD")
 
-        if commit_ref == git_push_commit_refs[remote_url][branch]:
+        if commit_ref == git_push_commit_refs[remote_url][self.branch]:
             print(f"[PUSH] Already pushed: " f"{self.git_repo_dir}")
             return True
 
@@ -236,10 +236,12 @@ class GitCommitFlow:
             return True  # No git remote
 
         try:
-            # Show the remote branch that is tracked by the current local
+            # Display the remote branch that is tracked by the current local
             # branch The error message will be: fatal: no such branch: 'master'
             subprocess.check_call(["git", "rev-parse",
-                                   "--symbolic-full-name", "HEAD@{u}"])
+                                   "--symbolic-full-name", "HEAD@{u}"],
+                                  stdout=subprocess.DEVNULL,
+                                  stderr=subprocess.DEVNULL)
 
             subprocess.check_call(["git", "fetch", "-a"])
         except subprocess.CalledProcessError as proc_err:
@@ -273,10 +275,9 @@ class GitCommitFlow:
         # Update cache file
         # ------------------
         if success:
-            branch = self._get_first_line_cmd("git symbolic-ref --short HEAD")
             commit_ref = \
                 self._get_first_line_cmd("git rev-parse --verify HEAD")
-            git_push_commit_refs[remote_url][branch] = commit_ref
+            git_push_commit_refs[remote_url][self.branch] = commit_ref
             self.cache.set("git_push_commit_refs", git_push_commit_refs)
 
         return success
@@ -287,9 +288,9 @@ class GitCommitFlow:
         except subprocess.CalledProcessError:
             return default_value
 
-    def find_git_repo_dir(self):
+    def _find_git_repo_dir(self):
         try:
-            self.git_repo_dir = Path(
+            return Path(
                 self._get_first_line_cmd("git rev-parse --show-toplevel",
                                          check=True)
             )
@@ -302,7 +303,7 @@ class GitCommitFlow:
                   "is not a directory", file=sys.stderr)
             sys.exit(1)
 
-    def count_commits(self):
+    def _count_commits(self):
         return len(self._run("git rev-list --all --count"))
 
     def _get_first_line_cmd(self, cmd, **kwargs) -> str:
@@ -388,8 +389,6 @@ class GitCommitFlow:
         # TODO: move this to a function
         logging.debug("[DEBUG] Previous message: %s", previous_message)
         logging.debug("[DEBUG] Commit message: %s", commit_message)
-        # if self.prompt_history_file and not commit_message and previous_message:
-        #     self.readline_manager.append_to_history(previous_message)
 
         return commit_message
 
