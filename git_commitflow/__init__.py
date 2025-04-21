@@ -29,28 +29,29 @@ import colorama
 from .git_commitflow import GitCommitFlow
 
 
-def git_commitflow_cli():
-    """The git-commitflow command-line interface."""
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout,
-                        format="%(asctime)s %(name)s: %(message)s")
-    colorama.init()
+def flush_stdin():
+    """Clear any pending input from the standard input buffer.
 
+    This function ensures that no stale or unintended data remains in stdin
+    before reading user input interactively. On Windows, it uses the msvcrt
+    module to discard characters from the input buffer. On POSIX-compliant
+    systems (e.g., Linux, macOS...), it uses select to check for available
+    input without blocking and either discards the data by reading or flushes
+    it using termios.tcflush if stdin is a terminal.
+    """
     try:
-        import platform  # pylint: disable=import-outside-toplevel
         if os.name == "nt":
             import msvcrt  # pylint: disable=import-outside-toplevel
 
-            # Check if there's input in the buffer
+            # For Windows systems, Check if there is any pending input in the
+            # buffer Discard characters one at a time until the buffer is empty
             while msvcrt.kbhit():
-                # Read and discard one character at a time
                 msvcrt.getch()
-        elif os.name == "posix" or platform.system() in ["Linux", "Darwin"]:
-            # For Unix-like systems, check if there's any pending input in
-            # stdin without blocking
+        elif os.name == "posix":
             import select  # pylint: disable=import-outside-toplevel
 
-            # Check if there is any pending input in stdin without blocking
-            # If input is available, flush the stdin buffer
+            # For Unix-like systems, check if there's any pending input in
+            # stdin without blocking
             stdin, _, _ = select.select([sys.stdin], [], [], 0)
             if stdin:
                 if sys.stdin.isatty():
@@ -61,9 +62,19 @@ def git_commitflow_cli():
                     tcflush(sys.stdin.fileno(), TCIFLUSH)
                 else:
                     # Read and discard input (in chunks)
-                    sys.stdin.read(1024)
+                    while sys.stdin.read(1024):
+                        pass
     except ImportError:
         pass
+
+
+def git_commitflow_cli():
+    """The git-commitflow command-line interface."""
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout,
+                        format="%(asctime)s %(name)s: %(message)s")
+    colorama.init()
+
+    flush_stdin()
 
     try:
         GitCommitFlow().main()
