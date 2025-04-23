@@ -372,22 +372,23 @@ class GitCommitFlow:
 
         print(f"Author: {Fore.YELLOW + git_author + Fore.RESET} ")
         print("Branch:", Fore.YELLOW + self.branch + Fore.RESET)
-        print("Git message: ", end="")
+        # print("Git message: ", end="")
 
-        commit_message = self.git_config_get("custom.commit-message").strip()
-        previous_message = ""
-        if commit_message:
-            print(Fore.YELLOW + commit_message + Fore.RESET)
-        elif self.amount_commits > 0:
-            previous_message = \
-                "\n".join(
-                    self._run("git --no-pager log -1 --pretty=%B")).rstrip()
-            print(Fore.YELLOW + previous_message + Fore.RESET)
+        # commit_message = self.git_config_get("custom.commit-message").strip()
+        # previous_message = ""
+        # if commit_message:
+        #     print(Fore.YELLOW + commit_message + Fore.RESET)
+        # elif self.amount_commits > 0:
+        #     previous_message = \
+        #         "\n".join(
+        #             self._run("git --no-pager log -1 --pretty=%B")).rstrip()
+        #     print(Fore.YELLOW + previous_message + Fore.RESET)
 
-        commit_message = self.prompt_git_commit_message(commit_message)
+        # commit_message = self.prompt_git_commit_message(commit_message)
+        commit_message = self.prompt_git_commit_message("")
 
         # TODO: move this to a function
-        logging.debug("[DEBUG] Previous message: %s", previous_message)
+        # logging.debug("[DEBUG] Previous message: %s", previous_message)
         logging.debug("[DEBUG] Commit message: %s", commit_message)
 
         return commit_message
