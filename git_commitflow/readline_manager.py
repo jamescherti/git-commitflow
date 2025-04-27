@@ -21,18 +21,16 @@
 
 import logging
 import readline
-import sys
 from pathlib import Path
-from typing import List, Optional, Set, Union
 
 
 class ReadlineSimpleCompleter:
-    def __init__(self, options: List[str]):
+    def __init__(self, options: list[str]):
         """Initialize with a sorted list of options."""
         self.complete_with = sorted(options)
-        self.matches: List[str] = []
+        self.matches: list[str] = []
 
-    def complete(self, _, state: int) -> Optional[str]:
+    def complete(self, _, state: int):
         """Return the next possible completion for 'text'."""
         if state == 0:
             orig_line = readline.get_line_buffer()
@@ -46,13 +44,13 @@ class ReadlineSimpleCompleter:
 
 
 class ReadlineManager:
-    def __init__(self, history_file: Union[str, Path, None] = None,
+    def __init__(self, history_file=None,
                  history_length=-1):
         """Manage readline settings, history, and input."""
         self.history_file = Path(history_file) if history_file else None
-        self.keywords: Set[str] = set()
+        self.keywords = set()
         self.history_length = history_length
-        self.history = []
+        # self.history = []
         self._init_history()
 
     def _init_history(self):
@@ -64,7 +62,7 @@ class ReadlineManager:
             readline.set_history_length(self.history_length)
 
         # History
-        readline.read_history_file(self.history_file)
+        self.read_history_file()
 
         # Keywords
         # if self.history_file and self.history_file.exists():
@@ -77,7 +75,8 @@ class ReadlineManager:
         logging.debug("[DEBUG] History loaded")
 
     def append_to_history(self, string):
-        self.history.append(string)
+        # self.history.append(string)
+        readline.add_history(string)
 
         # # Truncate history
         # if self.history_length >= 0 \
@@ -90,7 +89,12 @@ class ReadlineManager:
         #     with open(self.history_file, "a", encoding="utf-8") as fhandler:
         #         fhandler.write(f"{string}\n")
 
-    def _save_history(self):
+    def read_history_file(self):
+        """Read the current readline history to the specified file."""
+        if self.history_file:
+            readline.read_history_file(self.history_file)
+
+    def save_history_file(self):
         """Save the current readline history to the specified file."""
         if self.history_file:
             logging.debug("[DEBUG] History saved")
@@ -99,10 +103,12 @@ class ReadlineManager:
     def readline_input(self, prompt: str,
                        default: str = "",
                        required: bool = False,
-                       complete_with: Union[List[str], None] = None) -> str:
+                       complete_with=None) -> str:
         """
         Prompt for input with optional readline autocompletion and command
         history saving.
+
+        :complete_with: A list of strings to complete with.
         """
         all_keywords = self.keywords | \
             set(complete_with if complete_with else {})
@@ -128,7 +134,7 @@ class ReadlineManager:
                     break
             finally:
                 if save_history and self.history_file:
-                    self._save_history()
+                    self.save_history_file()
 
             return default if value == "" else value
         finally:
