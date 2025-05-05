@@ -382,7 +382,7 @@ class GitCommitFlow:
             previous_message = \
                 "\n".join(
                     self._run("git --no-pager log -1 --pretty=%B")).rstrip()
-            print("Previous git message: ",
+            print("Previous git message:",
                   Fore.YELLOW + previous_message + Fore.RESET)
             self.readline_manager.append_to_history(previous_message)
 
