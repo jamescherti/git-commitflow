@@ -23,7 +23,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="git-commitflow",
-    version="1.1.2",
+    version="1.1.3",
     packages=find_packages(),
     description="A git add/commit/push helper",
     long_description=((Path(__file__).parent.resolve().joinpath("README.md"))
