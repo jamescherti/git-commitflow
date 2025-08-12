@@ -114,7 +114,8 @@ class GitCommitFlow:
                       f"'{self.git_repo_dir}'.")
                 sys.exit(1)
 
-        self.git_submodule_foreach()
+        # Buggy
+        # self.git_submodule_foreach()
 
         if self._run("git status --porcelain"):
             self.git_add()
