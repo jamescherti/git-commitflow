@@ -93,14 +93,14 @@ class GitCommitFlow:
                   "pushed multiple times. This minimizes redundant pushes.)"),
         )
 
-        parser.add_argument(
-            "-r",
-            "--recursive",
-            default=False,
-            action="store_true",
-            required=False,
-            help="Apply git-commitflow to all submodules",
-        )
+        # parser.add_argument(
+        #     "-r",
+        #     "--recursive",
+        #     default=False,
+        #     action="store_true",
+        #     required=False,
+        #     help="Apply git-commitflow to all submodules",
+        # )
 
         return parser.parse_args()
 
@@ -133,29 +133,29 @@ class GitCommitFlow:
 
         sys.exit(errno)
 
-    def git_submodule_foreach(self):
-        try:
-            git_commit_wrapper_recursive = \
-                int(os.environ.get("GIT_COMMIT_WRAPPER_RECURSIVE", "0"))
-        except ValueError:
-            git_commit_wrapper_recursive = 0
-
-        if self.args.recursive or git_commit_wrapper_recursive:
-            if not (self.git_repo_dir / ".gitmodules").is_file():
-                return
-
-            git_ci_script = Path(__file__).absolute()
-            print(f"{Fore.LIGHTYELLOW_EX}[SUBMODULE FORREACH] "
-                  f"{self.git_repo_dir}{Fore.RESET}")
-            cmd = ["git", "submodule", "--quiet", "foreach", "--recursive",
-                   str(git_ci_script)]
-            if self.args.push:
-                cmd += ["--push"]
-            try:
-                subprocess.check_call(cmd)
-            except subprocess.CalledProcessError as proc_err:
-                print(f"Error: {proc_err}", file=sys.stderr)
-                sys.exit(1)
+    # def git_submodule_foreach(self):
+    #     try:
+    #         git_commit_wrapper_recursive = \
+    #             int(os.environ.get("GIT_COMMIT_WRAPPER_RECURSIVE", "0"))
+    #     except ValueError:
+    #         git_commit_wrapper_recursive = 0
+    #
+    #     if self.args.recursive or git_commit_wrapper_recursive:
+    #         if not (self.git_repo_dir / ".gitmodules").is_file():
+    #             return
+    #
+    #         git_ci_script = Path(__file__).absolute()
+    #         print(f"{Fore.LIGHTYELLOW_EX}[SUBMODULE FORREACH] "
+    #               f"{self.git_repo_dir}{Fore.RESET}")
+    #         cmd = ["git", "submodule", "--quiet", "foreach", "--recursive",
+    #                str(git_ci_script)]
+    #         if self.args.push:
+    #             cmd += ["--push"]
+    #         try:
+    #             subprocess.check_call(cmd)
+    #         except subprocess.CalledProcessError as proc_err:
+    #             print(f"Error: {proc_err}", file=sys.stderr)
+    #             sys.exit(1)
 
     def git_ci(self) -> int:
         """Function that performs the git commit."""

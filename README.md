@@ -68,7 +68,6 @@ Readline manager.
 options:
   -h, --help       show this help message and exit
   -p, --push       Git push after a successful commit
-  -r, --recursive  Apply git-commitflow to all submodules
 ```
 
 ## Customizations
