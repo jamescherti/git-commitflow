@@ -365,7 +365,6 @@ class GitCommitFlow:
 
         subprocess.check_call(["git", "status"])
         print(f"Git repo: {Fore.YELLOW}{self.git_repo_dir}{Fore.RESET}")
-        print()
 
         git_name = self.git_config_get("user.name", "Unknown")
         git_email = self.git_config_get("user.email", "unknown@domain.ext")
