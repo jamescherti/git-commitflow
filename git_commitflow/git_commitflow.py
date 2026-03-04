@@ -363,31 +363,35 @@ class GitCommitFlow:
                 # Ignore errors
                 pass
 
-        subprocess.check_call(["git", "status"])
-        print(f"Git repo: {Fore.YELLOW}{self.git_repo_dir}{Fore.RESET}")
-
         git_name = self.git_config_get("user.name", "Unknown")
         git_email = self.git_config_get("user.email", "unknown@domain.ext")
-        git_author = f"{git_name} <{git_email}>"
-
-        print(f"Author: {Fore.YELLOW + git_author + Fore.RESET} ")
-        print("Branch:", Fore.YELLOW + self.branch + Fore.RESET)
+        # git_author = f"{git_name} <{git_email}>"
+        git_author = f"{git_name}"
 
         # commit_message = self.git_config_get("custom.commit-message").strip()
         # previous_message = ""
         # if commit_message:
         #     print(Fore.YELLOW + commit_message + Fore.RESET)
 
+        prompt = "Commit message: "
         if self.amount_commits > 0:
-            previous_message = \
-                "\n".join(
-                    self._run("git --no-pager log -1 --pretty=%B")).rstrip()
-            print("Previous git message:",
-                  Fore.YELLOW + previous_message + Fore.RESET)
-            self.readline_manager.append_to_history(previous_message)
+            # previous_message = \
+            #     "\n".join(
+            #         self._run("git --no-pager log -1 --pretty=%B")).rstrip()
+            prompt = (
+                Fore.YELLOW + os.path.basename(self.git_repo_dir) +
+                Fore.RESET + " " +
+                f"({Fore.YELLOW + self.branch + Fore.RESET}): "
+                f"{Fore.YELLOW + git_author + Fore.RESET}> ")
+            # print(Fore.YELLOW + previous_message + Fore.RESET)
+            # self.readline_manager.append_to_history(previous_message)
 
-        # commit_message = self.prompt_git_commit_message(commit_message)
-        commit_message = self.prompt_git_commit_message("")
+        # commit_message = self.prompt_git_commit_message(prompt,
+        #                                                 commit_message)
+        commit_message = self.prompt_git_commit_message(prompt, "")
+
+        # TODO: add a confirmation?
+        # subprocess.check_call(["git", "status"])
 
         # TODO: move this to a function
         # logging.debug("[DEBUG] Previous message: %s", previous_message)
@@ -395,12 +399,12 @@ class GitCommitFlow:
 
         return commit_message
 
-    def prompt_git_commit_message(self, commit_message: str) -> str:
+    def prompt_git_commit_message(self, prompt: str,
+                                  commit_message: str) -> str:
         while True:
             try:
                 commit_message = \
-                    self.readline_manager.readline_input(
-                        prompt="Commit message: ")
+                    self.readline_manager.readline_input(prompt=prompt)
             except KeyboardInterrupt:
                 sys.exit(0)
 
