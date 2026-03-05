@@ -378,11 +378,13 @@ class GitCommitFlow:
             # previous_message = \
             #     "\n".join(
             #         self._run("git --no-pager log -1 --pretty=%B")).rstrip()
-            prompt = (
-                Fore.YELLOW + os.path.basename(self.git_repo_dir) +
-                Fore.RESET + " " +
-                f"({Fore.YELLOW + self.branch + Fore.RESET}): "
-                f"{Fore.YELLOW + git_author + Fore.RESET}> ")
+            # prompt = (
+            #     Fore.YELLOW + os.path.basename(self.git_repo_dir) +
+            #     Fore.RESET + " " +
+            #     f"({Fore.YELLOW + self.branch + Fore.RESET}): "
+            #     f"{Fore.YELLOW + git_author + Fore.RESET}> ")
+            prompt = (os.path.basename(self.git_repo_dir) +
+                      f" ({self.branch}): {git_author}> ")
             # print(Fore.YELLOW + previous_message + Fore.RESET)
             # self.readline_manager.append_to_history(previous_message)
 
