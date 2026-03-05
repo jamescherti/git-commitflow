@@ -19,26 +19,30 @@
 """Git Commitflow helpers."""
 
 
-import logging
 import os
 import re
 from pathlib import Path
-from typing import List, Union
-
-from .readline_manager import ReadlineManager
+from typing import Union
 
 
-def replace_home_with_tilde(path: os.PathLike) -> str:
-    """Replace the home directory with '~'."""
-    path_str = str(path)
-    home = str(Path.home())
-    if path_str.startswith(home):
-        return '~' + path_str[len(home):]
-    return path_str
+def replace_home_with_tilde(path: Union(Path, str)) -> str:
+    """
+    Replace the home directory with '~'.
+
+    :param path: The path to process.
+    :type path: Path
+    :return: The path string with the home directory replaced by '~'.
+    :rtype: str
+    """
+    path = Path(path)
+    try:
+        return "~/" + str(path.relative_to(Path.home()))
+    except ValueError:
+        return str(path)
 
 
-def remove_matching_filenames(filenames: List[str],
-                              patterns: List[str]) -> List[str]:
+def remove_matching_filenames(filenames: list[str],
+                              patterns: list[str]) -> list[str]:
     """
     Remove filenames that match any of the given regex patterns.
 

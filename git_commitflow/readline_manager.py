@@ -18,25 +18,41 @@
 #
 """Readline manager."""
 
-
 import logging
 import readline
 from pathlib import Path
+from typing import Any, Optional
 
 
 class ReadlineSimpleCompleter:
-    def __init__(self, options: list[str]):
-        """Initialize with a sorted list of options."""
-        self.complete_with = sorted(options)
+    """
+    Simple readline completer.
+    """
+
+    def __init__(self, options: list[str]) -> None:
+        """
+        Initialize with a sorted list of options.
+
+        :param options: list of completion options.
+        :type options: list[str]
+        """
+        self.complete_with: list[str] = sorted(options)
         self.matches: list[str] = []
 
-    def complete(self, _, state: int):
-        """Return the next possible completion for 'text'."""
+    def complete(self, _: Any, state: int) -> Optional[str]:
+        """
+        Return the next possible completion for 'text'.
+
+        :param state: The completion state index.
+        :type state: int
+        :return: The matching string or None.
+        :rtype: Optional[str]
+        """
         if state == 0:
-            orig_line = readline.get_line_buffer()
-            begin = readline.get_begidx()
-            end = readline.get_endidx()
-            being_completed = orig_line[begin:end]
+            orig_line: str = readline.get_line_buffer()
+            begin: int = readline.get_begidx()
+            end: int = readline.get_endidx()
+            being_completed: str = orig_line[begin:end]
             self.matches = [string for string in self.complete_with
                             if string.startswith(being_completed)]
 
@@ -44,17 +60,31 @@ class ReadlineSimpleCompleter:
 
 
 class ReadlineManager:
-    def __init__(self, history_file=None,
-                 history_length=-1):
-        """Manage readline settings, history, and input."""
-        self.history_file = Path(history_file) if history_file else None
-        self.keywords = set()
-        self.history_length = history_length
+    """
+    Readline manager for history and autocompletion.
+    """
+
+    def __init__(self, history_file: Optional[Path] = None,
+                 history_length: int = -1) -> None:
+        """
+        Manage readline settings, history, and input.
+
+        :param history_file: Path to the history file.
+        :type history_file: Optional[Path]
+        :param history_length: The length of history to retain.
+        :type history_length: int
+        """
+        self.history_file: Optional[Path] = Path(
+            history_file) if history_file else None
+        self.keywords: set[str] = set()
+        self.history_length: int = history_length
         # self.history = []
         self._init_history()
 
-    def _init_history(self):
-        """Initialize readline history from the specified file."""
+    def _init_history(self) -> None:
+        """
+        Initialize readline history from the specified file.
+        """
         if not (self.history_file and self.history_file.exists()):
             return
 
@@ -74,7 +104,13 @@ class ReadlineManager:
 
         logging.debug("[DEBUG] History loaded")
 
-    def append_to_history(self, string):
+    def append_to_history(self, string: str) -> None:
+        """
+        Append string to history.
+
+        :param string: The string to append.
+        :type string: str
+        """
         # self.history.append(string)
         readline.add_history(string)
 
@@ -89,32 +125,46 @@ class ReadlineManager:
         #     with open(self.history_file, "a", encoding="utf-8") as fhandler:
         #         fhandler.write(f"{string}\n")
 
-    def read_history_file(self):
-        """Read the current readline history to the specified file."""
+    def read_history_file(self) -> None:
+        """
+        Read the current readline history to the specified file.
+        """
         if self.history_file:
-            readline.read_history_file(self.history_file)
+            readline.read_history_file(str(self.history_file))
 
-    def save_history_file(self):
-        """Save the current readline history to the specified file."""
+    def save_history_file(self) -> None:
+        """
+        Save the current readline history to the specified file.
+        """
         if self.history_file:
             logging.debug("[DEBUG] History saved")
-            readline.write_history_file(self.history_file)
+            readline.write_history_file(str(self.history_file))
 
     def readline_input(self, prompt: str,
                        default: str = "",
                        required: bool = False,
-                       complete_with=None) -> str:
+                       complete_with: Optional[list[str]] = None) -> str:
         """
         Prompt for input with optional readline autocompletion and command
         history saving.
 
-        :complete_with: A list of strings to complete with.
+        :param prompt: The prompt string.
+        :type prompt: str
+        :param default: Default return value.
+        :type default: str
+        :param required: Whether input is required.
+        :type required: bool
+        :param complete_with: A list of strings to complete with.
+        :type complete_with: Optional[list[str]]
+        :return: The input string.
+        :rtype: str
         """
-        all_keywords = self.keywords | \
-            set(complete_with if complete_with else {})
+        all_keywords: set[str] = self.keywords | \
+            set(complete_with if complete_with else [])
         logging.debug("[DEBUG] Keywords: %s", str(all_keywords))
-        completer = ReadlineSimpleCompleter(list(all_keywords) or [])
-        previous_completer = readline.get_completer()
+        completer: ReadlineSimpleCompleter = ReadlineSimpleCompleter(
+            list(all_keywords) or [])
+        previous_completer: Any = readline.get_completer()
         try:
             readline.set_completer(completer.complete)
             readline.parse_and_bind('tab: complete')
@@ -122,10 +172,10 @@ class ReadlineManager:
             if default:
                 prompt += f" (default: {default})"
 
-            save_history = False
+            save_history: bool = False
             try:
                 while True:
-                    value = input(prompt)
+                    value: str = input(prompt)
                     if not value and required and default is None:
                         print("Error: a value is required")
                         continue

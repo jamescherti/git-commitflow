@@ -18,18 +18,33 @@
 #
 """Cache file."""
 
-
 import json
+from pathlib import Path
 from typing import Any
 
 
 class CacheFile:
-    def __init__(self, cache_filename):
-        self.cache_filename = cache_filename
-        self._cache = {}
-        self._modified = True
+    """
+    Manage cache file operations.
 
-    def set(self, key: str, value: str):
+    :param cache_filename: The path to the cache file.
+    :type cache_filename: Path
+    """
+
+    def __init__(self, cache_filename: Path) -> None:
+        self.cache_filename: Path = cache_filename
+        self._cache: dict[str, Any] = {}
+        self._modified: bool = True
+
+    def set(self, key: str, value: Any) -> None:
+        """
+        Set a value in the cache.
+
+        :param key: The key to set.
+        :type key: str
+        :param value: The value to store.
+        :type value: Any
+        """
         try:
             self._cache[key]
         except KeyError:
@@ -39,20 +54,36 @@ class CacheFile:
         self._modified = True
 
     def get(self, key: str, default: Any) -> Any:
+        """
+        Get a value from the cache.
+
+        :param key: The key to retrieve.
+        :type key: str
+        :param default: The default value if the key is not found.
+        :type default: Any
+        :return: The cached value or the default.
+        :rtype: Any
+        """
         try:
             return self._cache[key]
         except KeyError:
             return default
 
-    def load(self):
+    def load(self) -> None:
+        """
+        Load the cache from the file.
+        """
         self.cache_filename.parent.mkdir(parents=True, exist_ok=True)
         try:
             with open(self.cache_filename, "r", encoding="utf-8") as fhandler:
                 self._cache = dict(json.load(fhandler))
-        except FileNotFoundError:
-            return
+        except (FileNotFoundError, json.JSONDecodeError):
+            self._cache = {}
 
-    def save(self):
+    def save(self) -> None:
+        """
+        Save the cache to the file.
+        """
         if not self._modified:
             return
 

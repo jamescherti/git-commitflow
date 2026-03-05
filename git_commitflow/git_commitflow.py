@@ -20,12 +20,11 @@
 
 import argparse
 import logging
-import os
 import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Union
+from typing import Any, Union
 
 from colorama import Fore
 
@@ -38,29 +37,41 @@ from .readline_manager import ReadlineManager
 # MIN_COMMIT_MESSAGE_SIZE = 6
 # IGNORE_FILENAMES_REGEX = ["^flycheck_", "^flymake_"]
 
-GIT_DIFF_OPTS: List[str] = []
-MIN_COMMIT_MESSAGE_SIZE = 1
-GIT_COMMITFLOW_DATA_DIR = Path("~/.config/git-commitflow").expanduser()
-CACHE_FILE = GIT_COMMITFLOW_DATA_DIR / "repo-data.json"
-IGNORE_FILENAMES_REGEX: list = []
-HISTORY_LENGTH = 256
+GIT_DIFF_OPTS: list[str] = []
+MIN_COMMIT_MESSAGE_SIZE: int = 1
+GIT_COMMITFLOW_DATA_DIR: Path = Path("~/.config/git-commitflow").expanduser()
+CACHE_FILE: Path = GIT_COMMITFLOW_DATA_DIR / "repo-data.json"
+IGNORE_FILENAMES_REGEX: list[str] = []
+HISTORY_LENGTH: int = 256
 
 
 class GitCommitFlow:
-    def __init__(self):
-        self.args = self._parse_args()
+    """
+    Main controller for the Git commit workflow.
+    """
+
+    def __init__(self) -> None:
+        self.args: argparse.Namespace = self._parse_args()
         GIT_COMMITFLOW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-        self.git_repo_dir = self._find_git_repo_dir()
-        self.branch = self._get_first_line_cmd("git symbolic-ref --short HEAD")
-        self.amount_commits = self._count_commits()
-        self.readline_manager = self._init_prompt_and_history()
-        self.cache = CacheFile(CACHE_FILE)
+        self.git_repo_dir: Path = self._find_git_repo_dir()
+        self.branch: str = \
+            self._get_first_line_cmd("git symbolic-ref --short HEAD")
+        self.amount_commits: int = self._count_commits()
+        self.readline_manager: ReadlineManager = \
+            self._init_prompt_and_history()
+        self.cache: CacheFile = CacheFile(CACHE_FILE)
 
-    def _init_prompt_and_history(self):
+    def _init_prompt_and_history(self) -> ReadlineManager:
+        """
+        Initialize history and prompt manager.
+
+        :return: Configured ReadlineManager instance.
+        :rtype: ReadlineManager
+        """
         # History
-        prompt_history_file = None
-        dot_git_dir = \
+        prompt_history_file: Union[Path, None] = None
+        dot_git_dir: str = \
             self._get_first_line_cmd("git rev-parse --git-common-dir").strip()
         if not dot_git_dir:
             print("Error: The .git directory could not be located",
@@ -75,11 +86,17 @@ class GitCommitFlow:
         return ReadlineManager(history_file=prompt_history_file,
                                history_length=HISTORY_LENGTH)
 
-    def _parse_args(self):
-        """Parse command-line arguments."""
-        usage = "%(prog)s [--option] [args]"
-        parser = argparse.ArgumentParser(description=__doc__.splitlines()[0],
-                                         usage=usage)
+    def _parse_args(self) -> argparse.Namespace:
+        """
+        Parse command-line arguments.
+
+        :return: Parsed arguments namespace.
+        :rtype: argparse.Namespace
+        """
+        usage: str = "%(prog)s [--option] [args]"
+        parser: argparse.ArgumentParser = \
+            argparse.ArgumentParser(description=__doc__.splitlines()[0],
+                                    usage=usage)
         parser.add_argument(
             "-p",
             "--push",
@@ -104,8 +121,11 @@ class GitCommitFlow:
 
         return parser.parse_args()
 
-    def main(self):
-        errno = 0
+    def main(self) -> None:
+        """
+        Execute the main workflow.
+        """
+        errno: int = 0
 
         if self.amount_commits > 0:
             if len(self._run("git --no-pager diff --name-only "
@@ -133,9 +153,9 @@ class GitCommitFlow:
 
         sys.exit(errno)
 
-    # def git_submodule_foreach(self):
+    # def git_submodule_foreach(self) -> None:
     #     try:
-    #         git_commit_wrapper_recursive = \
+    #         git_commit_wrapper_recursive: int = \
     #             int(os.environ.get("GIT_COMMIT_WRAPPER_RECURSIVE", "0"))
     #     except ValueError:
     #         git_commit_wrapper_recursive = 0
@@ -144,11 +164,12 @@ class GitCommitFlow:
     #         if not (self.git_repo_dir / ".gitmodules").is_file():
     #             return
     #
-    #         git_ci_script = Path(__file__).absolute()
+    #         git_ci_script: Path = Path(__file__).absolute()
     #         print(f"{Fore.LIGHTYELLOW_EX}[SUBMODULE FORREACH] "
     #               f"{self.git_repo_dir}{Fore.RESET}")
-    #         cmd = ["git", "submodule", "--quiet", "foreach", "--recursive",
-    #                str(git_ci_script)]
+    #         cmd: list[str] = ["git", "submodule", "--quiet", "foreach",
+    #         "--recursive",
+    #                           str(git_ci_script)]
     #         if self.args.push:
     #             cmd += ["--push"]
     #         try:
@@ -158,19 +179,24 @@ class GitCommitFlow:
     #             sys.exit(1)
 
     def git_ci(self) -> int:
-        """Function that performs the git commit."""
+        """
+        Function that performs the git commit.
+
+        :return: Exit status code.
+        :rtype: int
+        """
         print(f"{Fore.LIGHTYELLOW_EX}[GIT COMMIT] "
               f"{self.git_repo_dir}{Fore.RESET}")
-        git_commit_opts = ["-a"]
+        git_commit_opts: list[str] = ["-a"]
 
-        use_git_commit = False
+        use_git_commit: bool = False
         try:
-            commit_message = self.diff_and_get_commit_message()
+            commit_message: str = self.diff_and_get_commit_message()
         except EOFError:
             use_git_commit = True
 
         if use_git_commit:
-            cmd = ["git", "commit", "-a"]
+            cmd: list[str] = ["git", "commit", "-a"]
             print("[RUN] ", subprocess.list2cmdline(cmd))
             subprocess.call(cmd)
         else:
@@ -192,24 +218,30 @@ class GitCommitFlow:
                       Fore.RESET)
             except subprocess.CalledProcessError:
                 print()
-                print(
-                    Fore.RED +
-                    "[COMMIT] git commit has FAILED." +
-                    Fore.RESET)
+                print(Fore.RED +
+                      "[COMMIT] git commit has FAILED." +
+                      Fore.RESET)
                 return 1
 
         return 0
 
-    def git_push(self):
+    def git_push(self) -> bool:
+        """
+        Perform git push sequence.
+
+        :return: Success boolean flag.
+        :rtype: bool
+        """
         # --------------
         # Load cache
         # --------------
-        remote_url = self._get_first_line_cmd("git ls-remote  --get-url")
+        remote_url: str = self._get_first_line_cmd("git ls-remote  --get-url")
 
         # ------------------------
         # Init commit refs (cache)
         # ------------------------
-        git_push_commit_refs = self.cache.get("git_push_commit_refs", {})
+        git_push_commit_refs: dict[str, Any] = \
+            self.cache.get("git_push_commit_refs", {})
 
         try:
             git_push_commit_refs[remote_url]
@@ -221,11 +253,11 @@ class GitCommitFlow:
         except KeyError:
             git_push_commit_refs[remote_url][self.branch] = ""
 
-        commit_ref = \
+        commit_ref: str = \
             self._get_first_line_cmd("git rev-parse --verify HEAD")
 
         if commit_ref == git_push_commit_refs[remote_url][self.branch]:
-            print(f"[PUSH] Already pushed: " f"{self.git_repo_dir}")
+            print(f"[PUSH] Already pushed: {self.git_repo_dir}")
             return True
 
         # -----------
@@ -247,22 +279,23 @@ class GitCommitFlow:
             subprocess.check_call(["git", "fetch", "-a"])
         except subprocess.CalledProcessError as proc_err:
             print(f"Error: {proc_err}", file=sys.stderr)
-            return 1
+            return False
 
         if subprocess.call(["git", "merge", "--ff-only"]) != 0:
-            git_pull_cmd = ["git", "pull", "--rebase", "--autostash"]
+            git_pull_cmd: list[str] = [
+                "git", "pull", "--rebase", "--autostash"]
             if self.confirm("Git failed to merge fast-forward."
                             "Do you want to run '" +
                             subprocess.list2cmdline(git_pull_cmd) +
                             "'"):
                 if subprocess.call(git_pull_cmd) != 0:
                     print("Error with 'git pull --rebase'...")
-                    return 1
+                    return False
 
         print()
         print('[RUN] git push')
 
-        success = False
+        success: bool = False
         if subprocess.call(["git", "push"]) == 0:
             print()
             print(f"{Fore.GREEN}[PUSH] git commit and push were "
@@ -284,113 +317,176 @@ class GitCommitFlow:
         return success
 
     def git_config_get(self, git_var: str, default_value: str = "") -> str:
+        """
+        Retrieve Git configuration variable.
+
+        :param git_var: The configuration key to read.
+        :type git_var: str
+        :param default_value: Default to return on error.
+        :type default_value: str
+        :return: The Git config value.
+        :rtype: str
+        """
         try:
             return self._get_first_line_cmd(["git", "config", git_var])
         except subprocess.CalledProcessError:
             return default_value
 
-    def _find_git_repo_dir(self):
+    def _find_git_repo_dir(self) -> Path:
+        """
+        Locate top-level Git repository directory.
+
+        :return: Path to repository directory.
+        :rtype: Path
+        """
         try:
-            return Path(
+            repo_dir: Path = Path(
                 self._get_first_line_cmd("git rev-parse --show-toplevel",
                                          check=True)
             )
+            if not repo_dir.is_dir():
+                print(f"Error: The Git repository '{repo_dir}' "
+                      "is not a directory", file=sys.stderr)
+                sys.exit(1)
+            return repo_dir
         except subprocess.CalledProcessError as proc_err:
             print(f"Error: {proc_err}", file=sys.stderr)
             sys.exit(1)
 
-        if not self.git_repo_dir.is_dir():
-            print(f"Error: The Git repository '{self.git_repo_dir}' "
-                  "is not a directory", file=sys.stderr)
-            sys.exit(1)
+    def _count_commits(self) -> int:
+        """
+        Count commits in current branch.
 
-    def _count_commits(self):
-        return len(self._run("git rev-list --all --count"))
+        :return: Commit count.
+        :rtype: int
+        """
+        output: str = \
+            self._get_first_line_cmd("git rev-list --all --count")
+        return int(output) if output.isdigit() else 0
 
-    def _get_first_line_cmd(self, cmd, **kwargs) -> str:
-        output = self._run(cmd, **kwargs)
+    def _get_first_line_cmd(
+            self, cmd: Union[str, list[str]], **kwargs: Any) -> str:
+        """
+        Execute command and fetch first output line.
+
+        :param cmd: Command to run.
+        :type cmd: Union[str, list[str]]
+        :param kwargs: Additional arguments for subprocess.
+        :type kwargs: Any
+        :return: First line of output.
+        :rtype: str
+        """
+        output: list[str] = self._run(cmd, **kwargs)
         try:
             return output[0]
         except IndexError:
             return ""
 
-    def _run(self, command: Union[str, List[str]],
-             check: bool = False, text: bool = True) -> List[str]:
+    def _run(self, command: Union[str, list[str]],
+             check: bool = False, text: bool = True) -> list[str]:
+        """
+        Execute command.
+
+        :param command: Command to run.
+        :type command: Union[str, list[str]]
+        :param check: Check return code flag.
+        :type check: bool
+        :param text: Text mode flag.
+        :type text: bool
+        :return: Output lines.
+        :rtype: list[str]
+        """
         if isinstance(command, str):
-            command = shlex.split(command)
-        result = subprocess.run(command, stdout=subprocess.PIPE,
-                                check=check, text=text)
+            command_list: list[str] = shlex.split(command)
+        else:
+            command_list = command
+        result: subprocess.CompletedProcess = subprocess.run(
+            command_list, stdout=subprocess.PIPE,
+            check=check, text=text
+        )
         if text:
             return str(result.stdout).splitlines()
-        else:
-            return []
+        return []
 
-    def git_add(self):
-        list_untracked_files = self._run(["git", "-C", self.git_repo_dir,
-                                          "ls-files", "--others",
-                                          "--exclude-standard"])
+    def git_add(self) -> None:
+        """
+        Interactive file addition to Git index.
+        """
+        list_untracked_files: list[str] = self._run(
+            ["git", "-C", str(self.git_repo_dir),
+             "ls-files", "--others",
+             "--exclude-standard"]
+        )
         list_untracked_files = remove_matching_filenames(
             list_untracked_files,
             IGNORE_FILENAMES_REGEX,
         )
-        list_untracked_files = [os.path.join(self.git_repo_dir, item)
-                                for item in list_untracked_files]
-        if list_untracked_files:
+        untracked_paths: list[str] = [str(self.git_repo_dir / item)
+                                      for item in list_untracked_files]
+        if untracked_paths:
             print("Git repository:", self.git_repo_dir)
             print()
             print("Files:")
-            for untracked_file in list_untracked_files:
-                print(" ", replace_home_with_tilde(untracked_file))
+            for untracked_file in untracked_paths:
+                print(" ", replace_home_with_tilde(Path(untracked_file)))
 
             print()
             while True:
-                answer = input("git add? [y,n] ")
+                answer: str = input("git add? [y,n] ")
                 if answer.lower() == "y":
-                    self._run(["git", "add"] + list_untracked_files)
+                    self._run(["git", "add"] + untracked_paths)
                     break
 
                 if answer.lower() == "n":
                     break
 
     def diff_and_get_commit_message(self) -> str:
+        """
+        Display diff and prompt user for a commit message.
+
+        :return: Commit message.
+        :rtype: str
+        """
         if self.amount_commits > 0:
             # Diff against HEAD shows both staged and unstaged changes
-            cmd = ["git", "--paginate", "diff",
-                   "--diff-filter=d", "--color"] + ["HEAD"] + GIT_DIFF_OPTS
+            cmd: list[str] = (["git", "--paginate", "diff",
+                              "--diff-filter=d", "--color"] + ["HEAD"]
+                              + GIT_DIFF_OPTS)
             try:
                 subprocess.check_call(cmd)
             except subprocess.CalledProcessError:
                 # Ignore errors
                 pass
 
-        git_name = self.git_config_get("user.name", "Unknown")
-        git_email = self.git_config_get("user.email", "unknown@domain.ext")
+        git_name: str = self.git_config_get("user.name", "Unknown")
+        # git_email: str = self.git_config_get(
+        #     "user.email", "unknown@domain.ext")
         # git_author = f"{git_name} <{git_email}>"
-        git_author = f"{git_name}"
+        git_author: str = f"{git_name}"
 
         # commit_message = self.git_config_get("custom.commit-message").strip()
         # previous_message = ""
         # if commit_message:
         #     print(Fore.YELLOW + commit_message + Fore.RESET)
 
-        prompt = "Commit message: "
+        prompt: str = "Commit message: "
         if self.amount_commits > 0:
             # previous_message = \
             #     "\n".join(
             #         self._run("git --no-pager log -1 --pretty=%B")).rstrip()
             # prompt = (
-            #     Fore.YELLOW + os.path.basename(self.git_repo_dir) +
+            #     Fore.YELLOW + self.git_repo_dir.name +
             #     Fore.RESET + " " +
             #     f"({Fore.YELLOW + self.branch + Fore.RESET}): "
             #     f"{Fore.YELLOW + git_author + Fore.RESET}> ")
-            prompt = (os.path.basename(self.git_repo_dir) +
+            prompt = (self.git_repo_dir.name +
                       f" ({self.branch}): {git_author}> ")
             # print(Fore.YELLOW + previous_message + Fore.RESET)
             # self.readline_manager.append_to_history(previous_message)
 
         # commit_message = self.prompt_git_commit_message(prompt,
         #                                                 commit_message)
-        commit_message = self.prompt_git_commit_message(prompt, "")
+        commit_message: str = self.prompt_git_commit_message(prompt, "")
 
         # TODO: add a confirmation?
         # subprocess.check_call(["git", "status"])
@@ -403,6 +499,16 @@ class GitCommitFlow:
 
     def prompt_git_commit_message(self, prompt: str,
                                   commit_message: str) -> str:
+        """
+        Interactive loop prompting for a commit message.
+
+        :param prompt: Command line prompt string.
+        :type prompt: str
+        :param commit_message: Initial default value.
+        :type commit_message: str
+        :return: Final commit message.
+        :rtype: str
+        """
         while True:
             try:
                 commit_message = \
@@ -414,7 +520,7 @@ class GitCommitFlow:
                 continue
 
             if len(commit_message) > 0 and \
-               len(commit_message) <= MIN_COMMIT_MESSAGE_SIZE:
+               len(commit_message) < MIN_COMMIT_MESSAGE_SIZE:
                 print("Error: the commit message is too short.")
                 print()
             else:
@@ -424,9 +530,17 @@ class GitCommitFlow:
 
     @staticmethod
     def confirm(prompt: str) -> bool:
+        """
+        Ask a yes or no question.
+
+        :param prompt: The prompt to present to the user.
+        :type prompt: str
+        :return: A boolean corresponding to yes or no.
+        :rtype: bool
+        """
         while True:
             try:
-                answer = input(f"{prompt} [y,n] ")
+                answer: str = input(f"{prompt} [y,n] ")
             except KeyboardInterrupt:
                 print()
                 sys.exit(1)

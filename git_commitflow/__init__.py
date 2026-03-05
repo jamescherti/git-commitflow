@@ -18,7 +18,6 @@
 #
 """Git commit and push helper."""
 
-
 import logging
 import os
 import subprocess
@@ -29,8 +28,9 @@ import colorama
 from .git_commitflow import GitCommitFlow
 
 
-def flush_stdin():
-    """Clear any pending input from the standard input buffer.
+def flush_stdin() -> None:
+    """
+    Clear any pending input from the standard input buffer.
 
     This function ensures that no stale or unintended data remains in stdin
     before reading user input interactively. On Windows, it uses the msvcrt
@@ -68,8 +68,10 @@ def flush_stdin():
         pass
 
 
-def git_commitflow_cli():
-    """The git-commitflow command-line interface."""
+def git_commitflow_cli() -> None:
+    """
+    The git-commitflow command-line interface.
+    """
     logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                         format="%(asctime)s %(name)s: %(message)s")
     colorama.init()
