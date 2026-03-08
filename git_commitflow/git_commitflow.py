@@ -193,6 +193,22 @@ class GitCommitFlow:
         try:
             commit_message: str = self.diff_and_get_commit_message()
         except EOFError:
+            print()
+            while True:
+                try:
+                    answer = input("Edit the commit message? [y,n] ")
+                except KeyboardInterrupt:
+                    print()
+                    sys.exit(1)
+
+                if answer not in ["y", "n"]:
+                    continue
+
+                if answer != "y":
+                    sys.exit(1)
+
+                break
+
             use_git_commit = True
 
         if use_git_commit:
