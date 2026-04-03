@@ -26,7 +26,7 @@ import sys
 from pathlib import Path
 from typing import Any, Union
 
-from colorama import Fore
+from colorama import Fore, Style
 
 from .cache_file import CacheFile
 from .helpers import remove_matching_filenames, replace_home_with_tilde
@@ -473,6 +473,21 @@ class GitCommitFlow:
             except subprocess.CalledProcessError:
                 # Ignore errors
                 pass
+
+            # Reset terminal attributes to prevent terminal and readline
+            # corruption
+            sys.stdout.write(Style.RESET_ALL)
+
+            # term_show_cursor: str = "\033[?25h"
+            # disable_bracketed_paste: str = "\033[?2004l"
+            # carriage_return: str = "\r"
+            # terminal_reset_seq: str = (
+            #     f"{Style.RESET_ALL}{term_show_cursor}"
+            #     f"{disable_bracketed_paste}{carriage_return}"
+            # )
+            # sys.stdout.write(terminal_reset_seq)
+
+            sys.stdout.flush()
 
         git_name: str = self.git_config_get("user.name", "Unknown")
         # git_email: str = self.git_config_get(
