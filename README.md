@@ -23,7 +23,16 @@ Additionally, the tool simplifies the workflow for adding, committing, and pushi
 - git >= 2.6
 - Python and pip
 
-## Optional Python Dependencies
+## Installation
+
+Here is how to install `git-commitflow` using [pip](https://pypi.org/project/pip/):
+```
+pip install --user git-commitflow
+```
+
+The pip command above will install the `git-commitflow` executable in the directory `~/.local/bin/`.
+
+### Optional Python Dependencies
 
 The `git-commitflow` CLI supports optional dependencies that extend its functionality. These extras can be installed based on environment requirements.
 
@@ -44,15 +53,6 @@ To install both extras at once, use a comma-separated list:
 ```bash
 pip install "git-commitflow[colors,proctitle]"
 ```
-
-## Installation
-
-Here is how to install `git-commitflow` using [pip](https://pypi.org/project/pip/):
-```
-pip install --user git-commitflow
-```
-
-The pip command above will install the `git-commitflow` executable in the directory `~/.local/bin/`.
 
 ## Usage
 
