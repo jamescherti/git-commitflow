@@ -22,8 +22,14 @@ import logging
 import os
 import subprocess
 import sys
+from pathlib import Path
 
-import colorama
+try:
+    import colorama
+    HAS_COLORAMA = True
+except ImportError:
+    HAS_COLORAMA = False
+
 
 from .git_commitflow import GitCommitFlow
 
@@ -74,7 +80,18 @@ def git_commitflow_cli() -> None:
     """
     logging.basicConfig(level=logging.INFO, stream=sys.stdout,
                         format="%(asctime)s %(name)s: %(message)s")
-    colorama.init()
+
+    # Optional feature: setproctitle
+    try:
+        # pylint: disable=import-outside-toplevel
+        from setproctitle import setproctitle
+        setproctitle(Path(sys.argv[0]).name)  # type: ignore
+    except ImportError:
+        # Optional dependency 'setproctitle' is not installed.
+        pass
+
+    if HAS_COLORAMA:
+        colorama.init()
 
     flush_stdin()
 

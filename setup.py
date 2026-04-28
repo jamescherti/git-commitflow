@@ -32,7 +32,10 @@ setup(
     url="https://github.com/jamescherti/git-commitflow",
     author="James Cherti",
     python_requires=">=3.6, <4",
-    install_requires=["colorama"],
+    extras_require={
+        "colors": ["colorama"],
+        "proctitle": ["setproctitle"],
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU General Public License (GPL)",

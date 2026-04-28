@@ -26,7 +26,19 @@ import sys
 from pathlib import Path
 from typing import Any, Union
 
-from colorama import Fore, Style
+try:
+    from colorama import Fore, Style
+except ImportError:
+    class Fore:  # type: ignore
+        WHITE: str = ""
+        GREEN: str = ""
+        RED: str = ""
+        YELLOW: str = ""
+        LIGHTYELLOW_EX: str = ""
+        RESET: str = ""
+
+    class Style:  # type: ignore
+        RESET_ALL: str = ""
 
 from .cache_file import CacheFile
 from .helpers import remove_matching_filenames, replace_home_with_tilde
