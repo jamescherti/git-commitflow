@@ -174,7 +174,8 @@ class GitCommitFlow:
         if not errno and self.args.push:
             try:
                 self.cache.load()
-                self.git_push()
+                if not self.git_push():
+                    errno = 1
             finally:
                 self.cache.save()
 
@@ -298,15 +299,8 @@ class GitCommitFlow:
         git_push_commit_refs: dict[str, Any] = \
             self.cache.get("git_push_commit_refs", {})
 
-        try:
-            git_push_commit_refs[remote_url]
-        except KeyError:
-            git_push_commit_refs[remote_url] = {}
-
-        try:
-            git_push_commit_refs[remote_url][self.branch]
-        except KeyError:
-            git_push_commit_refs[remote_url][self.branch] = ""
+        git_push_commit_refs.setdefault(remote_url, {})
+        git_push_commit_refs[remote_url].setdefault(self.branch, "")
 
         commit_ref: str = \
             self._get_first_line_cmd("git rev-parse --verify HEAD")
@@ -346,6 +340,8 @@ class GitCommitFlow:
                 if subprocess.call(git_pull_cmd) != 0:
                     print("Error with 'git pull --rebase'...")
                     return False
+            else:
+                return False
 
         print()
         print('[RUN] git push')
