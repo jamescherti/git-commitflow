@@ -122,6 +122,13 @@ class GitCommitFlow:
                   "pushed multiple times. This minimizes redundant pushes.)"),
         )
 
+        parser.add_argument(
+            "files",
+            nargs="*",
+            default=[],
+            help="Files to commit. If none are specified, commits all files.",
+        )
+
         # parser.add_argument(
         #     "-r",
         #     "--recursive",
@@ -149,8 +156,16 @@ class GitCommitFlow:
         # Buggy
         # self.git_submodule_foreach()
 
-        if self._run("git status --porcelain"):
-            self.git_add()
+        status_cmd: list[str] = ["git", "status", "--porcelain"]
+        if self.args.files:
+            status_cmd.extend(["--"])
+            status_cmd.extend(self.args.files)
+
+        if self._run(status_cmd):
+            if not self.args.files:
+                self.git_add()
+            else:
+                self._run(["git", "add", "--"] + self.args.files)
             errno = self.git_ci()
         else:
             print("[COMMIT] Nothing to commit "
@@ -199,7 +214,10 @@ class GitCommitFlow:
         """
         print(f"{Fore.LIGHTYELLOW_EX}[GIT COMMIT] "
               f"{self.git_repo_dir}{Fore.RESET}")
-        git_commit_opts: list[str] = ["-a"]
+        git_commit_opts: list[str] = []
+
+        if not self.args.files:
+            git_commit_opts.append("-a")
 
         use_git_commit: bool = False
         try:
@@ -224,7 +242,12 @@ class GitCommitFlow:
             use_git_commit = True
 
         if use_git_commit:
-            cmd: list[str] = ["git", "commit", "-a"]
+            cmd: list[str] = ["git", "commit"]
+            if not self.args.files:
+                cmd.append("-a")
+            else:
+                cmd.extend(["--"])
+                cmd.extend(self.args.files)
             print("[RUN] ", subprocess.list2cmdline(cmd))
             subprocess.call(cmd)
         else:
@@ -236,6 +259,10 @@ class GitCommitFlow:
                 if self.amount_commits > 0:
                     # Reuse the commit message of the previous commit
                     git_commit_opts.extend(["--reuse-message=HEAD"])
+
+            if self.args.files:
+                git_commit_opts.extend(["--"])
+                git_commit_opts.extend(self.args.files)
 
             print("[RUN] git commit", " ".join(git_commit_opts))
             try:
@@ -477,9 +504,15 @@ class GitCommitFlow:
         """
         if self.amount_commits > 0:
             # Diff against HEAD shows both staged and unstaged changes
-            cmd: list[str] = (["git", "--paginate", "diff",
-                              "--diff-filter=d", "--color"] + ["HEAD"]
-                              + GIT_DIFF_OPTS)
+            cmd: list[str] = ["git", "--paginate", "diff",
+                              "--diff-filter=d", "--color", "HEAD"]
+            cmd.extend(GIT_DIFF_OPTS)
+
+            if self.args.files:
+                if "--" not in cmd:
+                    cmd.append("--")
+                cmd.extend(self.args.files)
+
             try:
                 subprocess.check_call(cmd)
             except subprocess.CalledProcessError:
