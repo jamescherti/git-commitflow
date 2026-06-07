@@ -584,9 +584,30 @@ class GitCommitFlow:
         while True:
             try:
                 commit_message = \
-                    self.readline_manager.readline_input(prompt=prompt)
+                    self.readline_manager.readline_input(
+                        prompt=prompt,
+                        complete_with=["/reset"]
+                    )
             except KeyboardInterrupt:
                 sys.exit(0)
+
+            if commit_message == "/reset":
+                if self.confirm("Are you sure you want to cancel and run "
+                                "'git reset --hard HEAD'?"):
+                    try:
+                        subprocess.check_call(["git", "reset", "--hard",
+                                               "HEAD"])
+                        print(f"{Fore.GREEN}[RESET] git reset --hard HEAD "
+                              f"was successful.{Fore.RESET}")
+                        sys.exit(0)
+                    except subprocess.CalledProcessError:
+                        print(f"{Fore.RED}[RESET] git reset --hard HEAD "
+                              f"failed.{Fore.RESET}")
+                        sys.exit(1)
+                else:
+                    print(f"{Fore.YELLOW}[RESET] Aborted. You can continue "
+                          f"typing your commit message.{Fore.RESET}")
+                    continue
 
             if commit_message == "":
                 continue

@@ -9,6 +9,7 @@ Running `git-commitflow` guides the user through the following interactive steps
 - Prompting the user to add files (`git add`).
 - Displaying differences to ensure accuracy and prevent mistakes before committing (`git diff`).
 - Prompting the user to enter a commit message and then committing the changes (`git commit`).
+- Supporting prompt commands such as `/reset` to cancel the diff and hard reset the repository (`git reset --hard HEAD`).
 - It first attempts to merge using `--ff-only`; if the merge fails, it prompts the user to confirm whether to proceed with a rebase using `--rebase` and `--autostash`. Afterward, it commits the changes.
 - Optional (`-p` flag): Pushing updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference. This reduces unnecessary pushes.
 

@@ -165,8 +165,17 @@ class ReadlineManager:
         completer: ReadlineSimpleCompleter = ReadlineSimpleCompleter(
             list(all_keywords) or [])
         previous_completer: Any = readline.get_completer()
+        old_delims: str = readline.get_completer_delims()
+
+        # pylint: disable=too-many-try-statements
         try:
             readline.set_completer(completer.complete)
+
+            # Remove the forward slash from delimiters to allow completing
+            # commands like /reset
+            if "/" in old_delims:
+                readline.set_completer_delims(old_delims.replace("/", ""))
+
             readline.parse_and_bind('tab: complete')
 
             if default:
@@ -180,7 +189,13 @@ class ReadlineManager:
                         print("Error: a value is required")
                         continue
 
-                    save_history = True
+                    if value.startswith("/"):
+                        hist_len: int = readline.get_current_history_length()
+                        if hist_len > 0:
+                            readline.remove_history_item(hist_len - 1)
+                    else:
+                        save_history = True
+
                     break
             finally:
                 if save_history and self.history_file:
@@ -189,3 +204,4 @@ class ReadlineManager:
             return default if value == "" else value
         finally:
             readline.set_completer(previous_completer)
+            readline.set_completer_delims(old_delims)
