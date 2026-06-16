@@ -574,7 +574,7 @@ class GitCommitFlow:
                 commit_message = \
                     self.readline_manager.readline_input(
                         prompt=prompt,
-                        complete_with=["/reset", "/edit"]
+                        complete_with=["/reset", "/edit", "/skip"]
                     )
             except KeyboardInterrupt:
                 sys.exit(0)
@@ -599,6 +599,9 @@ class GitCommitFlow:
 
             if commit_message == "/edit":
                 break
+
+            if commit_message == "/skip":
+                sys.exit(0)
 
             if commit_message == "":
                 continue
