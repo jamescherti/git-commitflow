@@ -9,13 +9,13 @@ Running `git-commitflow` guides the user through the following interactive steps
 - Prompting the user to add files (`git add`).
 - Displaying differences to ensure accuracy and prevent mistakes before committing (`git diff`).
 - Prompting the user to enter a commit message and then committing the changes (`git commit`).
-- Supporting prompt commands such as `/reset` to cancel the diff and hard reset the repository (`git reset --hard HEAD`).
+- Supporting prompt commands such as `/reset` to cancel the diff and hard reset the repository (`git reset --hard HEAD`), and `/edit` to open the Git editor.
 - It first attempts to merge using `--ff-only`; if the merge fails, it prompts the user to confirm whether to proceed with a rebase using `--rebase` and `--autostash`. Afterward, it commits the changes.
 - Optional (`-p` flag): Pushing updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference. This reduces unnecessary pushes.
 
 One significant benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. This reduces the likelihood of including unintended files or alterations in commits, promoting a cleaner and more organized version history.
 
-When prompted for a commit message, the user can press the up arrow to quickly access previous messages, utilizing the readline prompt history. Additionally, pressing Ctrl-d will open the Git editor, similar to the behavior when executing `git commit -a`.
+When prompted for a commit message, the user can press the up arrow to quickly access previous messages, utilizing the readline prompt history. Additionally, entering `/edit` will open the Git editor, similar to the behavior when executing `git commit -a`.
 
 Additionally, the tool simplifies the workflow for adding, committing, and pushing changes, making the overall Git experience more efficient and user-friendly.
 

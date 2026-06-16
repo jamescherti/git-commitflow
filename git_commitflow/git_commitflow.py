@@ -225,21 +225,9 @@ class GitCommitFlow:
             commit_message: str = self.diff_and_get_commit_message()
         except EOFError:
             print()
-            while True:
-                try:
-                    answer = input("Edit the commit message? [y,n] ")
-                except KeyboardInterrupt:
-                    print()
-                    sys.exit(1)
+            sys.exit(1)
 
-                if answer not in ["y", "n"]:
-                    continue
-
-                if answer != "y":
-                    sys.exit(1)
-
-                break
-
+        if commit_message == "/edit":
             use_git_commit = True
 
         if use_git_commit:
@@ -586,7 +574,7 @@ class GitCommitFlow:
                 commit_message = \
                     self.readline_manager.readline_input(
                         prompt=prompt,
-                        complete_with=["/reset"]
+                        complete_with=["/reset", "/edit"]
                     )
             except KeyboardInterrupt:
                 sys.exit(0)
@@ -608,6 +596,9 @@ class GitCommitFlow:
                     print(f"{Fore.YELLOW}[RESET] Aborted. You can continue "
                           f"typing your commit message.{Fore.RESET}")
                     continue
+
+            if commit_message == "/edit":
+                break
 
             if commit_message == "":
                 continue
