@@ -11,7 +11,7 @@ Every developer has experienced the consequences of running Git commands from mu
 
 ## The workflow
 
-Running `git-commitflow` guides you through the following steps in order:
+Running **git-commitflow** guides you through the following steps in order:
 
 - Prompting to add files (`git add`).
 - Displaying `git diff` to verify accuracy and prevent mistakes before committing.
