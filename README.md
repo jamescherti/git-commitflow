@@ -3,7 +3,7 @@
 
 ## Introduction
 
-The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that combines `git add`, `git diff`, branch synchronization, `git commit`, and `git push` into a single, mistake-proof workflow.
+The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that combines `git add`, `git diff`, `git commit`, and `git push` into a single, mistake-proof workflow.
 
 A key benefit of **git-commitflow** is that it gives you complete visibility your changes before they are committed, keeping your Git history clean.
 
