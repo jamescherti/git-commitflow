@@ -7,7 +7,7 @@ The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is 
 
 A key benefit of `git-commitflow` is that it gives you full visibility into your changes before they are committed, keeping your Git history clean.
 
-Every developer has experienced the consequences of running Git commands from muscle memory at the end of a long coding session. For example, you finally fix a bug, run `git add .` and `git commit -m` without inspecting the full diff, and push to the remote repository, only to realize moments later that your commit included leftover debug statements, temporary configuration edits, or untracked files. Even when the changes are clean, discovering after committing that the remote branch has diverged forces you to stop and manually stash, rebase, or untangle an unnecessary merge commit.
+Every developer has experienced the consequences of running Git commands from muscle memory at the end of a long coding session. For example, you finally fix a bug, run `git add .` and `git commit -m` without inspecting the full diff, and push to the remote repository, only to realize moments later that your commit included leftover debug statements, temporary configuration edits, or untracked files. Even when the changes are clean, discovering after committing that the remote branch has diverged forces you to stop and manually stash, and rebase an unnecessary merge commit.
 
 ## The workflow
 
