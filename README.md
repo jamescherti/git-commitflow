@@ -1,4 +1,4 @@
-# git-commitflow - A Git Add, Diff, Commit, and Push Helper
+# git-commitflow - Never make mistakes when committing using Git
 ![License](https://img.shields.io/github/license/jamescherti/outline-indent.el)
 
 ## Introduction
