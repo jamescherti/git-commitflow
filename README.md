@@ -7,6 +7,8 @@ The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is 
 
 A key benefit of **git-commitflow** is that it gives you complete visibility your changes before they are committed, keeping your Git history clean.
 
+## The workflow
+
 Running `git-commitflow` guides you through the following steps in order:
 
 - Prompting to add files (`git add`).
