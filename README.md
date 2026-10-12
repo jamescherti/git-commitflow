@@ -19,7 +19,7 @@ Running **git-commitflow** guides you through the following steps in order:
 - Synchronizing changes before finalizing the commit: it first attempts a fast-forward merge (`--ff-only`). If the merge fails, it prompts the user to confirm whether to proceed with a rebase (`--rebase` and `--autostash`).
 - It commits the changes (`git commit`).
 
-Optional (`-p` flag) makes **git-commitflow** pushe updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. (The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference and reducing unnecessary network calls.)
+Optional (`-p` flag) makes **git-commitflow** push updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before.
 
 When prompted for a commit message, the user can press the up arrow to quickly access previous messages via the readline prompt history. Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
 
