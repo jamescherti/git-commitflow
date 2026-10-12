@@ -19,7 +19,7 @@ Running **git-commitflow** guides you through the following steps in order:
 - Synchronizing changes before finalizing the commit: it first attempts a fast-forward merge (`--ff-only`). If the merge fails, it prompts the user to confirm whether to proceed with a rebase (`--rebase` and `--autostash`).
 - It commits the changes (`git commit`).
 
-Optional (`-p` flag) makes **git-commitflow** pushe updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference and reducing unnecessary network calls.
+Optional (`-p` flag) makes **git-commitflow** pushe updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. (The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference and reducing unnecessary network calls.)
 
 When prompted for a commit message, the user can press the up arrow to quickly access previous messages via the readline prompt history. Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
 
@@ -35,23 +35,29 @@ Here is how to install `git-commitflow` using [pip](https://pypi.org/project/pip
 pip install --user git-commitflow
 ```
 
-The pip command above will install the `git-commitflow` executable in the directory `~/.local/bin/`.
+The pip command above will install the `git-commitflow` executable in `~/.local/bin/git-commitflow`.
 
 ### Optional Python Dependencies
 
 The `git-commitflow` CLI supports optional dependencies that extend its functionality. These extras can be installed based on environment requirements.
 
-**Colored Terminal Output (`colors`)**: Installs `colorama` to provide consistent cross-platform ANSI color support. This enhances the readability of standard output and error messages.
+#### Colored Terminal Output
+
+The following installs `colorama` to provide consistent cross-platform ANSI color support. This enhances the readability of standard output and error messages.
 
 ```bash
 pip install --user "git-commitflow[colors]"
 ```
 
-**Custom Process Title (`proctitle`)**: Installs `setproctitle` to rename the running process from `python` to `git-commitflow`. This simplifies identification and management in system monitoring tools such as `top`, `htop`, and `ps`.
+#### Custom Process Title
+
+The following installs `setproctitle` to rename the running process from `python` to `git-commitflow`. This simplifies identification and management in system monitoring tools such as `top`, `htop`, and `ps`.
 
 ```bash
 pip install --user "git-commitflow[proctitle]"
 ```
+
+#### Install both
 
 To install both extras at once, use a comma-separated list:
 
