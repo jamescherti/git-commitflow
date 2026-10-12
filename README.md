@@ -38,17 +38,17 @@ The pip command above will install the `git-commitflow` executable in the direct
 
 The `git-commitflow` CLI supports optional dependencies that extend its functionality. These extras can be installed based on environment requirements.
 
-* **Colored Terminal Output (`colors`)**: Installs `colorama` to provide consistent cross-platform ANSI color support. This enhances the readability of standard output and error messages.
+**Colored Terminal Output (`colors`)**: Installs `colorama` to provide consistent cross-platform ANSI color support. This enhances the readability of standard output and error messages.
 
-  ```bash
-  pip install --user "git-commitflow[colors]"
-  ```
+```bash
+pip install --user "git-commitflow[colors]"
+```
 
-* **Custom Process Title (`proctitle`)**: Installs `setproctitle` to rename the running process from `python` to `git-commitflow`. This simplifies identification and management in system monitoring tools such as `top`, `htop`, and `ps`.
+**Custom Process Title (`proctitle`)**: Installs `setproctitle` to rename the running process from `python` to `git-commitflow`. This simplifies identification and management in system monitoring tools such as `top`, `htop`, and `ps`.
 
-  ```bash
-  pip install --user "git-commitflow[proctitle]"
-  ```
+```bash
+pip install --user "git-commitflow[proctitle]"
+```
 
 To install both extras at once, use a comma-separated list:
 
