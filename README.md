@@ -3,7 +3,9 @@
 
 ## Introduction
 
-The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that assists with Git commit and push operations.
+The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that combines Git add, diff, branch synchronization, committing, and pushing into a single, mistake-proof workflow.
+
+A key benefit of **git-commitflow** is that it gives you complete visibility and control over your changes before they are recorded. Enforcing an interactive diff review before every commit catches unintended edits, leftover debug code, and stray files early, keeping your Git history clean.
 
 Running `git-commitflow` guides you through the following steps in order:
 
@@ -14,11 +16,7 @@ Running `git-commitflow` guides you through the following steps in order:
 
 Optional (`-p` flag) makes **git-commitflow** pushe updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference and reducing unnecessary network calls.
 
-A key benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. Enforcing an interactive diff review reduces the chances of including unintended files or alterations in commits.
-
 When prompted for a commit message, the user can press the up arrow to quickly access previous messages via the readline prompt history. Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
-
-The **git-commitflow** tool simplifies adding, reviewing, committing, and pushing changes.
 
 ## Requirements
 
