@@ -16,7 +16,8 @@ Running **git-commitflow** guides you through the following steps in order:
 - Prompting to add files (`git add`).
 - Displaying `git diff` to verify accuracy and prevent mistakes before committing.
 - Prompting to enter a commit message. (The prompt supports commands such as `/reset` to cancel the diff and hard reset the repository, `/edit` to open the Git editor, and `/skip` to exit the program without making any changes.)
-- Synchronizing changes before finalizing the commit: it first attempts a fast-forward merge (`--ff-only`). If the merge fails, it prompts the user to confirm whether to proceed with a rebase (`--rebase` and `--autostash`). Afterward, it commits the changes (`git commit`).
+- Synchronizing changes before finalizing the commit: it first attempts a fast-forward merge (`--ff-only`). If the merge fails, it prompts the user to confirm whether to proceed with a rebase (`--rebase` and `--autostash`).
+- It commits the changes (`git commit`).
 
 Optional (`-p` flag) makes **git-commitflow** pushe updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference and reducing unnecessary network calls.
 
