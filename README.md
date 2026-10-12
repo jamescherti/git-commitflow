@@ -6,6 +6,7 @@
 The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that assists with the Git operations.
 
 Running `git-commitflow` guides the user through the following interactive steps:
+
 - Prompting the user to add files (`git add`).
 - Displaying differences to ensure accuracy and prevent mistakes before committing (`git diff`).
 - Prompting the user to enter a commit message and then committing the changes (`git commit`).
