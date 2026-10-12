@@ -87,18 +87,21 @@ If you also wish to push the changes, you can use the `--push` option:
 git commitflow --push
 ```
 
-(The references are pushed only if they have not been pushed previously. The `git-commitflow` tool keeps track of the references that have been pushed, preventing the same reference from being pushed multiple times. This minimizes redundant pushes.)
-
-This will git add, diff, commit, push your changes to the remote repository after the commit.
+The references are pushed only if they have not been pushed previously. The `git-commitflow` tool keeps track of the references that have been pushed, preventing the same reference from being pushed multiple times. This minimizes redundant pushes.
 
 ### Command-line arguments
 
 ```text
 usage: git-commitflow [--option] [args]
 
+Git commitflow command-line interface.
+
+positional arguments:
+  files       Files to commit. If none are specified, commits all files.
+
 options:
-  -h, --help       show this help message and exit
-  -p, --push       Git push after a successful commit
+  -h, --help  show this help message and exit
+  -p, --push  Git push after a successful commit.
 ```
 
 ## Customizations
@@ -113,7 +116,7 @@ ci = commitflow
 cip = commitflow --push
 ```
 
-With these aliases, you can conveniently use the commands `git ci` to commit changes and `git cip` to commit and push in a single step.
+With these aliases, you can use the commands `git ci` to commit changes and `git cip` to commit and push in a single step.
 
 ## License
 
