@@ -1,24 +1,24 @@
 # git-commitflow - Never make mistakes when committing using Git
-![License](https://img.shields.io/github/license/jamescherti/outline-indent.el)
+![License](https://img.shields.io/github/license/jamescherti/git-commitflow)
 
 ## Introduction
 
-The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that assists with the Git operations.
+The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that assists with Git commit and push operations.
 
-Running `git-commitflow` guides the user through the following interactive steps:
+Running `git-commitflow` guides you through the following steps in order:
 
-- Prompting the user to add files (`git add`).
-- Displaying differences to ensure accuracy and prevent mistakes before committing (`git diff`).
-- Prompting the user to enter a commit message and then committing the changes (`git commit`).
-- Supporting prompt commands such as `/reset` to cancel the diff and hard reset the repository (`git reset --hard HEAD`), `/edit` to open the Git editor, and `/skip` to exit the program without making any changes.
-- It first attempts to merge using `--ff-only`; if the merge fails, it prompts the user to confirm whether to proceed with a rebase using `--rebase` and `--autostash`. Afterward, it commits the changes.
-- Optional (`-p` flag): Pushing updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference. This reduces unnecessary pushes.
+- Prompting to add files (`git add`).
+- Displaying `git diff` to verify accuracy and prevent mistakes before committing.
+- Prompting to enter a commit message. (The prompt supports commands such as `/reset` to cancel the diff and hard reset the repository, `/edit` to open the Git editor, and `/skip` to exit the program without making any changes.)
+- Synchronizing changes before finalizing the commit: it first attempts a fast-forward merge (`--ff-only`). If the merge fails, it prompts the user to confirm whether to proceed with a rebase (`--rebase` and `--autostash`). Afterward, it commits the changes (`git commit`).
 
-One significant benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. This reduces the likelihood of including unintended files or alterations in commits, promoting a cleaner and more organized version history.
+Optional (`-p` flag) makes **git-commitflow** pushe updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before. The `git-commitflow` tool maintains a list of references that have been pushed, preventing multiple pushes of the same reference and reducing unnecessary network calls.
 
-When prompted for a commit message, the user can press the up arrow to quickly access previous messages, utilizing the readline prompt history. Additionally, entering `/edit` will open the Git editor, similar to the behavior when executing `git commit -a`.
+A key benefit of the `git-commitflow` tool is that it enhances the user's awareness and control over their changes before committing. Enforcing an interactive diff review reduces the chances of including unintended files or alterations in commits.
 
-Additionally, the tool simplifies the workflow for adding, committing, and pushing changes, making the overall Git experience more efficient and user-friendly.
+When prompted for a commit message, the user can press the up arrow to quickly access previous messages via the readline prompt history. Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
+
+The **git-commitflow** tool simplifies adding, reviewing, committing, and pushing changes.
 
 ## Requirements
 
@@ -28,7 +28,7 @@ Additionally, the tool simplifies the workflow for adding, committing, and pushi
 ## Installation
 
 Here is how to install `git-commitflow` using [pip](https://pypi.org/project/pip/):
-```
+```bash
 pip install --user git-commitflow
 ```
 
@@ -70,7 +70,7 @@ This command will guide you through the following steps interactively:
 
 - **Stage untracked files**: Prompts you to `git add` any untracked files that haven't been staged.
 - **Review changes**: Displays a diff of your changes, allowing you to confirm whether you want to proceed with the commit.
-- **Commit changes**: Once you validate your commit message, the tool will finalize the commit.
+- **Commit changes**: Once you validate your commit message, the tool synchronizes the branch and finalizes the commit.
 
 If you also wish to push the changes, you can use the `--push` option:
 
@@ -84,10 +84,8 @@ This will git add, diff, commit, push your changes to the remote repository afte
 
 ### Command-line arguments
 
-```
+```text
 usage: git-commitflow [--option] [args]
-
-Readline manager.
 
 options:
   -h, --help       show this help message and exit
