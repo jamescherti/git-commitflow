@@ -53,8 +53,11 @@ class ReadlineSimpleCompleter:
             begin: int = readline.get_begidx()
             end: int = readline.get_endidx()
             being_completed: str = orig_line[begin:end]
-            self.matches = [string for string in self.complete_with
-                            if string.startswith(being_completed)]
+            self.matches = [
+                string
+                for string in self.complete_with
+                if string.startswith(being_completed)
+            ]
 
         return self.matches[state] if state < len(self.matches) else None
 
@@ -64,8 +67,9 @@ class ReadlineManager:
     Readline manager for history and autocompletion.
     """
 
-    def __init__(self, history_file: Optional[Path] = None,
-                 history_length: int = -1) -> None:
+    def __init__(
+        self, history_file: Optional[Path] = None, history_length: int = -1
+    ) -> None:
         """
         Manage readline settings, history, and input.
 
@@ -74,8 +78,7 @@ class ReadlineManager:
         :param history_length: The length of history to retain.
         :type history_length: int
         """
-        self.history_file: Optional[Path] = Path(
-            history_file) if history_file else None
+        self.history_file: Optional[Path] = Path(history_file) if history_file else None
         self.keywords: set[str] = set()
         self.history_length: int = history_length
         # self.history = []
@@ -140,10 +143,13 @@ class ReadlineManager:
             logging.debug("[DEBUG] History saved")
             readline.write_history_file(str(self.history_file))
 
-    def readline_input(self, prompt: str,
-                       default: str = "",
-                       required: bool = False,
-                       complete_with: Optional[list[str]] = None) -> str:
+    def readline_input(
+        self,
+        prompt: str,
+        default: str = "",
+        required: bool = False,
+        complete_with: Optional[list[str]] = None,
+    ) -> str:
         """
         Prompt for input with optional readline autocompletion and command
         history saving.
@@ -159,11 +165,13 @@ class ReadlineManager:
         :return: The input string.
         :rtype: str
         """
-        all_keywords: set[str] = self.keywords | \
-            set(complete_with if complete_with else [])
+        all_keywords: set[str] = self.keywords | set(
+            complete_with if complete_with else []
+        )
         logging.debug("[DEBUG] Keywords: %s", str(all_keywords))
         completer: ReadlineSimpleCompleter = ReadlineSimpleCompleter(
-            list(all_keywords) or [])
+            list(all_keywords) or []
+        )
         previous_completer: Any = readline.get_completer()
         old_delims: str = readline.get_completer_delims()
 
@@ -176,7 +184,7 @@ class ReadlineManager:
             if "/" in old_delims:
                 readline.set_completer_delims(old_delims.replace("/", ""))
 
-            readline.parse_and_bind('tab: complete')
+            readline.parse_and_bind("tab: complete")
 
             if default:
                 prompt += f" (default: {default})"

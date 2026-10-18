@@ -29,6 +29,7 @@ from typing import Any, Union
 try:
     from colorama import Fore, Style
 except ImportError:
+
     class Fore:  # type: ignore
         WHITE: str = ""
         GREEN: str = ""
@@ -39,6 +40,7 @@ except ImportError:
 
     class Style:  # type: ignore
         RESET_ALL: str = ""
+
 
 from .cache_file import CacheFile
 from .helpers import remove_matching_filenames, replace_home_with_tilde
@@ -67,11 +69,9 @@ class GitCommitFlow:
         GIT_COMMITFLOW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
         self.git_repo_dir: Path = self._find_git_repo_dir()
-        self.branch: str = \
-            self._get_first_line_cmd("git symbolic-ref --short HEAD")
+        self.branch: str = self._get_first_line_cmd("git symbolic-ref --short HEAD")
         self.amount_commits: int = self._count_commits()
-        self.readline_manager: ReadlineManager = \
-            self._init_prompt_and_history()
+        self.readline_manager: ReadlineManager = self._init_prompt_and_history()
         self.cache: CacheFile = CacheFile(CACHE_FILE)
 
     def _init_prompt_and_history(self) -> ReadlineManager:
@@ -83,20 +83,20 @@ class GitCommitFlow:
         """
         # History
         prompt_history_file: Union[Path, None] = None
-        dot_git_dir: str = \
-            self._get_first_line_cmd("git rev-parse --git-common-dir").strip()
+        dot_git_dir: str = self._get_first_line_cmd(
+            "git rev-parse --git-common-dir"
+        ).strip()
         if not dot_git_dir:
-            print("Error: The .git directory could not be located",
-                  file=sys.stderr)
+            print("Error: The .git directory could not be located", file=sys.stderr)
             sys.exit(1)
 
-        prompt_history_file = \
-            Path(dot_git_dir).joinpath("git-commitflow-history.rl")
+        prompt_history_file = Path(dot_git_dir).joinpath("git-commitflow-history.rl")
 
         logging.debug("[DEBUG] History file: %s", str(prompt_history_file))
 
-        return ReadlineManager(history_file=prompt_history_file,
-                               history_length=HISTORY_LENGTH)
+        return ReadlineManager(
+            history_file=prompt_history_file, history_length=HISTORY_LENGTH
+        )
 
     def _parse_args(self) -> argparse.Namespace:
         """
@@ -106,20 +106,22 @@ class GitCommitFlow:
         :rtype: argparse.Namespace
         """
         usage: str = "%(prog)s [--option] [args]"
-        parser: argparse.ArgumentParser = \
-            argparse.ArgumentParser(description=__doc__.splitlines()[0],
-                                    usage=usage)
+        parser: argparse.ArgumentParser = argparse.ArgumentParser(
+            description=__doc__.splitlines()[0], usage=usage
+        )
         parser.add_argument(
             "-p",
             "--push",
             default=False,
             action="store_true",
             required=False,
-            help=("Git push after a successful commit. (The references are "
-                  "pushed only if they have not been pushed previously. The "
-                  "git-commitflow tool keeps track of the references that "
-                  "have been pushed, preventing the same reference from being "
-                  "pushed multiple times. This minimizes redundant pushes.)"),
+            help=(
+                "Git push after a successful commit. (The references are "
+                "pushed only if they have not been pushed previously. The "
+                "git-commitflow tool keeps track of the references that "
+                "have been pushed, preventing the same reference from being "
+                "pushed multiple times. This minimizes redundant pushes.)"
+            ),
         )
 
         parser.add_argument(
@@ -147,10 +149,13 @@ class GitCommitFlow:
         errno: int = 0
 
         if self.amount_commits > 0:
-            if len(self._run("git --no-pager diff --name-only "
-                             "--diff-filter=TXBU HEAD")) > 0:
-                print("There is an issue in the repository "
-                      f"'{self.git_repo_dir}'.")
+            if (
+                len(
+                    self._run("git --no-pager diff --name-only --diff-filter=TXBU HEAD")
+                )
+                > 0
+            ):
+                print(f"There is an issue in the repository '{self.git_repo_dir}'.")
                 sys.exit(1)
 
         # Buggy
@@ -168,8 +173,7 @@ class GitCommitFlow:
                 self._run(["git", "add", "--"] + self.args.files)
             errno = self.git_ci()
         else:
-            print("[COMMIT] Nothing to commit "
-                  f"(Path: '{self.git_repo_dir}').")
+            print(f"[COMMIT] Nothing to commit (Path: '{self.git_repo_dir}').")
 
         if not errno and self.args.push:
             try:
@@ -213,8 +217,7 @@ class GitCommitFlow:
         :return: Exit status code.
         :rtype: int
         """
-        print(f"{Fore.LIGHTYELLOW_EX}[GIT COMMIT] "
-              f"{self.git_repo_dir}{Fore.RESET}")
+        print(f"{Fore.LIGHTYELLOW_EX}[GIT COMMIT] {self.git_repo_dir}{Fore.RESET}")
         git_commit_opts: list[str] = []
 
         if not self.args.files:
@@ -258,13 +261,10 @@ class GitCommitFlow:
                 subprocess.check_call(["git", "commit"] + git_commit_opts)
 
                 print()
-                print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." +
-                      Fore.RESET)
+                print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." + Fore.RESET)
             except subprocess.CalledProcessError:
                 print()
-                print(Fore.RED +
-                      "[COMMIT] git commit has FAILED." +
-                      Fore.RESET)
+                print(Fore.RED + "[COMMIT] git commit has FAILED." + Fore.RESET)
                 return 1
 
         return 0
@@ -284,14 +284,14 @@ class GitCommitFlow:
         # ------------------------
         # Init commit refs (cache)
         # ------------------------
-        git_push_commit_refs: dict[str, Any] = \
-            self.cache.get("git_push_commit_refs", {})
+        git_push_commit_refs: dict[str, Any] = self.cache.get(
+            "git_push_commit_refs", {}
+        )
 
         git_push_commit_refs.setdefault(remote_url, {})
         git_push_commit_refs[remote_url].setdefault(self.branch, "")
 
-        commit_ref: str = \
-            self._get_first_line_cmd("git rev-parse --verify HEAD")
+        commit_ref: str = self._get_first_line_cmd("git rev-parse --verify HEAD")
 
         if commit_ref == git_push_commit_refs[remote_url][self.branch]:
             print(f"[PUSH] Already pushed: {self.git_repo_dir}")
@@ -300,18 +300,18 @@ class GitCommitFlow:
         # -----------
         # GIT PUSH
         # -----------
-        print(f"{Fore.LIGHTYELLOW_EX}[GIT PUSH] "
-              f"{self.git_repo_dir}{Fore.RESET}")
+        print(f"{Fore.LIGHTYELLOW_EX}[GIT PUSH] {self.git_repo_dir}{Fore.RESET}")
         if not self._run(["git", "remote", "-v"]):
             return True  # No git remote
 
         try:
             # Display the remote branch that is tracked by the current local
             # branch The error message will be: fatal: no such branch: 'master'
-            subprocess.check_call(["git", "rev-parse",
-                                   "--symbolic-full-name", "HEAD@{u}"],
-                                  stdout=subprocess.DEVNULL,
-                                  stderr=subprocess.DEVNULL)
+            subprocess.check_call(
+                ["git", "rev-parse", "--symbolic-full-name", "HEAD@{u}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
 
             subprocess.check_call(["git", "fetch", "-a"])
         except subprocess.CalledProcessError as proc_err:
@@ -319,12 +319,11 @@ class GitCommitFlow:
             return False
 
         if subprocess.call(["git", "merge", "--ff-only"]) != 0:
-            git_pull_cmd: list[str] = [
-                "git", "pull", "--rebase", "--autostash"]
-            if self.confirm("Git failed to merge fast-forward."
-                            "Do you want to run '" +
-                            subprocess.list2cmdline(git_pull_cmd) +
-                            "'"):
+            git_pull_cmd: list[str] = ["git", "pull", "--rebase", "--autostash"]
+            if self.confirm(
+                "Git failed to merge fast-forward."
+                "Do you want to run '" + subprocess.list2cmdline(git_pull_cmd) + "'"
+            ):
                 if subprocess.call(git_pull_cmd) != 0:
                     print("Error with 'git pull --rebase'...")
                     return False
@@ -332,13 +331,14 @@ class GitCommitFlow:
                 return False
 
         print()
-        print('[RUN] git push')
+        print("[RUN] git push")
 
         success: bool = False
         if subprocess.call(["git", "push"]) == 0:
             print()
-            print(f"{Fore.GREEN}[PUSH] git commit and push were "
-                  f"SUCCESSFUL.{Fore.RESET}")
+            print(
+                f"{Fore.GREEN}[PUSH] git commit and push were SUCCESSFUL.{Fore.RESET}"
+            )
             success = True
         else:
             print()
@@ -348,8 +348,7 @@ class GitCommitFlow:
         # Update cache file
         # ------------------
         if success:
-            commit_ref = \
-                self._get_first_line_cmd("git rev-parse --verify HEAD")
+            commit_ref = self._get_first_line_cmd("git rev-parse --verify HEAD")
             git_push_commit_refs[remote_url][self.branch] = commit_ref
             self.cache.set("git_push_commit_refs", git_push_commit_refs)
 
@@ -380,12 +379,13 @@ class GitCommitFlow:
         """
         try:
             repo_dir: Path = Path(
-                self._get_first_line_cmd("git rev-parse --show-toplevel",
-                                         check=True)
+                self._get_first_line_cmd("git rev-parse --show-toplevel", check=True)
             )
             if not repo_dir.is_dir():
-                print(f"Error: The Git repository '{repo_dir}' "
-                      "is not a directory", file=sys.stderr)
+                print(
+                    f"Error: The Git repository '{repo_dir}' is not a directory",
+                    file=sys.stderr,
+                )
                 sys.exit(1)
             return repo_dir
         except subprocess.CalledProcessError as proc_err:
@@ -399,12 +399,10 @@ class GitCommitFlow:
         :return: Commit count.
         :rtype: int
         """
-        output: str = \
-            self._get_first_line_cmd("git rev-list --all --count")
+        output: str = self._get_first_line_cmd("git rev-list --all --count")
         return int(output) if output.isdigit() else 0
 
-    def _get_first_line_cmd(
-            self, cmd: Union[str, list[str]], **kwargs: Any) -> str:
+    def _get_first_line_cmd(self, cmd: Union[str, list[str]], **kwargs: Any) -> str:
         """
         Execute command and fetch first output line.
 
@@ -421,8 +419,9 @@ class GitCommitFlow:
         except IndexError:
             return ""
 
-    def _run(self, command: Union[str, list[str]],
-             check: bool = False, text: bool = True) -> list[str]:
+    def _run(
+        self, command: Union[str, list[str]], check: bool = False, text: bool = True
+    ) -> list[str]:
         """
         Execute command.
 
@@ -440,8 +439,7 @@ class GitCommitFlow:
         else:
             command_list = command
         result: subprocess.CompletedProcess = subprocess.run(
-            command_list, stdout=subprocess.PIPE,
-            check=check, text=text
+            command_list, stdout=subprocess.PIPE, check=check, text=text
         )
         if text:
             return str(result.stdout).splitlines()
@@ -452,16 +450,22 @@ class GitCommitFlow:
         Interactive file addition to Git index.
         """
         list_untracked_files: list[str] = self._run(
-            ["git", "-C", str(self.git_repo_dir),
-             "ls-files", "--others",
-             "--exclude-standard"]
+            [
+                "git",
+                "-C",
+                str(self.git_repo_dir),
+                "ls-files",
+                "--others",
+                "--exclude-standard",
+            ]
         )
         list_untracked_files = remove_matching_filenames(
             list_untracked_files,
             IGNORE_FILENAMES_REGEX,
         )
-        untracked_paths: list[str] = [str(self.git_repo_dir / item)
-                                      for item in list_untracked_files]
+        untracked_paths: list[str] = [
+            str(self.git_repo_dir / item) for item in list_untracked_files
+        ]
         if untracked_paths:
             print("Git repository:", self.git_repo_dir)
             print()
@@ -488,8 +492,14 @@ class GitCommitFlow:
         """
         if self.amount_commits > 0:
             # Diff against HEAD shows both staged and unstaged changes
-            cmd: list[str] = ["git", "--paginate", "diff",
-                              "--diff-filter=d", "--color", "HEAD"]
+            cmd: list[str] = [
+                "git",
+                "--paginate",
+                "diff",
+                "--diff-filter=d",
+                "--color",
+                "HEAD",
+            ]
             cmd.extend(GIT_DIFF_OPTS)
 
             if self.args.files:
@@ -539,8 +549,7 @@ class GitCommitFlow:
             #     Fore.RESET + " " +
             #     f"({Fore.YELLOW + self.branch + Fore.RESET}): "
             #     f"{Fore.YELLOW + git_author + Fore.RESET}> ")
-            prompt = (self.git_repo_dir.name +
-                      f" ({self.branch}): {git_author}> ")
+            prompt = self.git_repo_dir.name + f" ({self.branch}): {git_author}> "
             # print(Fore.YELLOW + previous_message + Fore.RESET)
             # self.readline_manager.append_to_history(previous_message)
 
@@ -557,8 +566,7 @@ class GitCommitFlow:
 
         return commit_message
 
-    def prompt_git_commit_message(self, prompt: str,
-                                  commit_message: str) -> str:
+    def prompt_git_commit_message(self, prompt: str, commit_message: str) -> str:
         """
         Interactive loop prompting for a commit message.
 
@@ -571,30 +579,34 @@ class GitCommitFlow:
         """
         while True:
             try:
-                commit_message = \
-                    self.readline_manager.readline_input(
-                        prompt=prompt,
-                        complete_with=["/reset", "/edit", "/skip"]
-                    )
+                commit_message = self.readline_manager.readline_input(
+                    prompt=prompt, complete_with=["/reset", "/edit", "/skip"]
+                )
             except KeyboardInterrupt:
                 sys.exit(0)
 
             if commit_message == "/reset":
-                if self.confirm("Are you sure you want to cancel and run "
-                                "'git reset --hard HEAD'?"):
+                if self.confirm(
+                    "Are you sure you want to cancel and run 'git reset --hard HEAD'?"
+                ):
                     try:
-                        subprocess.check_call(["git", "reset", "--hard",
-                                               "HEAD"])
-                        print(f"{Fore.GREEN}[RESET] git reset --hard HEAD "
-                              f"was successful.{Fore.RESET}")
+                        subprocess.check_call(["git", "reset", "--hard", "HEAD"])
+                        print(
+                            f"{Fore.GREEN}[RESET] git reset --hard HEAD "
+                            f"was successful.{Fore.RESET}"
+                        )
                         sys.exit(0)
                     except subprocess.CalledProcessError:
-                        print(f"{Fore.RED}[RESET] git reset --hard HEAD "
-                              f"failed.{Fore.RESET}")
+                        print(
+                            f"{Fore.RED}[RESET] git reset --hard HEAD "
+                            f"failed.{Fore.RESET}"
+                        )
                         sys.exit(1)
                 else:
-                    print(f"{Fore.YELLOW}[RESET] Aborted. You can continue "
-                          f"typing your commit message.{Fore.RESET}")
+                    print(
+                        f"{Fore.YELLOW}[RESET] Aborted. You can continue "
+                        f"typing your commit message.{Fore.RESET}"
+                    )
                     continue
 
             if commit_message == "/edit":
@@ -606,8 +618,10 @@ class GitCommitFlow:
             if commit_message == "":
                 continue
 
-            if len(commit_message) > 0 and \
-               len(commit_message) < MIN_COMMIT_MESSAGE_SIZE:
+            if (
+                len(commit_message) > 0
+                and len(commit_message) < MIN_COMMIT_MESSAGE_SIZE
+            ):
                 print("Error: the commit message is too short.")
                 print()
             else:

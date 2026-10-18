@@ -26,6 +26,7 @@ from pathlib import Path
 
 try:
     import colorama
+
     HAS_COLORAMA = True
 except ImportError:
     HAS_COLORAMA = False
@@ -78,13 +79,17 @@ def git_commitflow_cli() -> None:
     """
     The git-commitflow command-line interface.
     """
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout,
-                        format="%(asctime)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stdout,
+        format="%(asctime)s %(name)s: %(message)s",
+    )
 
     # Optional feature: setproctitle
     try:
         # pylint: disable=import-outside-toplevel
         from setproctitle import setproctitle
+
         setproctitle(Path(sys.argv[0]).name)  # type: ignore
     except ImportError:
         # Optional dependency 'setproctitle' is not installed.

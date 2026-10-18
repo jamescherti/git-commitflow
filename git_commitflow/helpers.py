@@ -18,7 +18,6 @@
 #
 """Git Commitflow helpers."""
 
-
 import os
 import re
 from pathlib import Path
@@ -41,8 +40,7 @@ def replace_home_with_tilde(path: Union[Path, str]) -> str:
         return str(path)
 
 
-def remove_matching_filenames(filenames: list[str],
-                              patterns: list[str]) -> list[str]:
+def remove_matching_filenames(filenames: list[str], patterns: list[str]) -> list[str]:
     """
     Remove filenames that match any of the given regex patterns.
 
@@ -51,7 +49,11 @@ def remove_matching_filenames(filenames: list[str],
     :return: A list of filenames that do not match any of the patterns.
     """
     compiled_patterns = [re.compile(pattern) for pattern in patterns]
-    filtered_filenames = [filename for filename in filenames
-                          if not any(pattern.match(os.path.basename(filename))
-                                     for pattern in compiled_patterns)]
+    filtered_filenames = [
+        filename
+        for filename in filenames
+        if not any(
+            pattern.match(os.path.basename(filename)) for pattern in compiled_patterns
+        )
+    ]
     return filtered_filenames
