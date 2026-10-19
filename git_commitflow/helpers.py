@@ -21,10 +21,9 @@
 import os
 import re
 from pathlib import Path
-from typing import Union
 
 
-def replace_home_with_tilde(path: Union[Path, str]) -> str:
+def replace_home_with_tilde(path: Path | str) -> str:
     """
     Replace the home directory with '~'.
 

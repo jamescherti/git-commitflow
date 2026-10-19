@@ -21,7 +21,7 @@
 import logging
 import readline
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 class ReadlineSimpleCompleter:
@@ -39,7 +39,7 @@ class ReadlineSimpleCompleter:
         self.complete_with: list[str] = sorted(options)
         self.matches: list[str] = []
 
-    def complete(self, _: Any, state: int) -> Optional[str]:
+    def complete(self, _: Any, state: int) -> str | None:
         """
         Return the next possible completion for 'text'.
 
@@ -68,7 +68,7 @@ class ReadlineManager:
     """
 
     def __init__(
-        self, history_file: Optional[Path] = None, history_length: int = -1
+        self, history_file: Path | None = None, history_length: int = -1
     ) -> None:
         """
         Manage readline settings, history, and input.
@@ -78,7 +78,7 @@ class ReadlineManager:
         :param history_length: The length of history to retain.
         :type history_length: int
         """
-        self.history_file: Optional[Path] = Path(history_file) if history_file else None
+        self.history_file: Path | None = Path(history_file) if history_file else None
         self.keywords: set[str] = set()
         self.history_length: int = history_length
         # self.history = []
@@ -148,7 +148,7 @@ class ReadlineManager:
         prompt: str,
         default: str = "",
         required: bool = False,
-        complete_with: Optional[list[str]] = None,
+        complete_with: list[str] | None = None,
     ) -> str:
         """
         Prompt for input with optional readline autocompletion and command

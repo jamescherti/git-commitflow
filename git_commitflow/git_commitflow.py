@@ -24,7 +24,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 try:
     from colorama import Fore, Style
@@ -82,7 +82,7 @@ class GitCommitFlow:
         :rtype: ReadlineManager
         """
         # History
-        prompt_history_file: Union[Path, None] = None
+        prompt_history_file: Path | None = None
         dot_git_dir: str = self._get_first_line_cmd(
             "git rev-parse --git-common-dir"
         ).strip()
@@ -402,7 +402,7 @@ class GitCommitFlow:
         output: str = self._get_first_line_cmd("git rev-list --all --count")
         return int(output) if output.isdigit() else 0
 
-    def _get_first_line_cmd(self, cmd: Union[str, list[str]], **kwargs: Any) -> str:
+    def _get_first_line_cmd(self, cmd: str | list[str], **kwargs: Any) -> str:
         """
         Execute command and fetch first output line.
 
@@ -420,7 +420,7 @@ class GitCommitFlow:
             return ""
 
     def _run(
-        self, command: Union[str, list[str]], check: bool = False, text: bool = True
+        self, command: str | list[str], check: bool = False, text: bool = True
     ) -> list[str]:
         """
         Execute command.

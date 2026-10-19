@@ -75,7 +75,7 @@ class CacheFile:
         """
         self.cache_filename.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with open(self.cache_filename, "r", encoding="utf-8") as fhandler:
+            with open(self.cache_filename, encoding="utf-8") as fhandler:
                 self._cache = dict(json.load(fhandler))
         except (FileNotFoundError, json.JSONDecodeError):
             self._cache = {}
