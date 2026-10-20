@@ -80,9 +80,11 @@ class PromptManager:
     def read_history_file(self) -> None:
         """Read the prompt history from the specified file."""
         if self.history_file and self.history_file.exists():
-            with open(self.history_file, encoding="utf-8") as fhandler:
+            with self.history_file.open(encoding="utf-8") as fhandler:
                 lines: list[str] = [
-                    line.rstrip("\r\n") for line in fhandler if line.rstrip("\r\n")
+                    line.rstrip("\r\n")
+                    for line in fhandler
+                    if line.rstrip("\r\n") and not line.startswith("/")
                 ]
 
             if self.history_length >= 0:
@@ -103,7 +105,7 @@ class PromptManager:
                 strings = strings[-self.history_length :]
 
             self.history_file.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.history_file, "w", encoding="utf-8") as fhandler:
+            with self.history_file.open("w", encoding="utf-8") as fhandler:
                 for line in strings:
                     fhandler.write(f"{line}\n")
 
@@ -128,9 +130,7 @@ class PromptManager:
         :return: The input string.
         :rtype: str
         """
-        all_keywords: set[str] = self.keywords | set(
-            complete_with if complete_with else []
-        )
+        all_keywords: set[str] = self.keywords | set(complete_with or [])
         logging.debug("[DEBUG] Keywords: %s", str(all_keywords))
         completer: WordCompleter = WordCompleter(sorted(all_keywords), WORD=True)
 
@@ -145,11 +145,11 @@ class PromptManager:
                     history=self.history,
                     completer=completer,
                 )
-                if not value and required and default is None:
+                if not value and required and not default:
                     print("Error: a value is required")
                     continue
 
-                if not value.startswith("/"):
+                if value and not value.startswith("/"):
                     save_history = True
 
                 break
