@@ -24,6 +24,8 @@ from pathlib import Path
 from prompt_toolkit import prompt as pt_prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
+from prompt_toolkit.key_binding.bindings.named_commands import get_by_name
 from prompt_toolkit.shortcuts import CompleteStyle
 
 
@@ -60,6 +62,29 @@ class PromptManager:
         self.history_length: int = history_length
         self.history: _PromptHistory = _PromptHistory()
         self._init_history()
+
+    @staticmethod
+    def _create_key_bindings() -> KeyBindings:
+        """Create key bindings for Alt+hjkl alongside default arrow keys."""
+        kb = KeyBindings()
+
+        @kb.add("escape", "h")
+        def _left(event: KeyPressEvent) -> None:
+            get_by_name("backward-char").call(event)
+
+        @kb.add("escape", "l")
+        def _right(event: KeyPressEvent) -> None:
+            get_by_name("forward-char").call(event)
+
+        @kb.add("escape", "k")
+        def _up(event: KeyPressEvent) -> None:
+            event.current_buffer.auto_up(count=event.arg)
+
+        @kb.add("escape", "j")
+        def _down(event: KeyPressEvent) -> None:
+            event.current_buffer.auto_down(count=event.arg)
+
+        return kb
 
     def _init_history(self) -> None:
         """Initialize prompt history from the specified file."""
@@ -147,6 +172,7 @@ class PromptManager:
                     completer=completer,
                     complete_while_typing=False,
                     complete_style=CompleteStyle.READLINE_LIKE,
+                    key_bindings=self._create_key_bindings(),
                 )
                 if not value and required and not default:
                     print("Error: a value is required")
