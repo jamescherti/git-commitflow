@@ -24,6 +24,7 @@ from pathlib import Path
 from prompt_toolkit import prompt as pt_prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.shortcuts import CompleteStyle
 
 
 class _PromptHistory(InMemoryHistory):
@@ -144,6 +145,8 @@ class PromptManager:
                     prompt,
                     history=self.history,
                     completer=completer,
+                    complete_while_typing=False,
+                    complete_style=CompleteStyle.READLINE_LIKE,
                 )
                 if not value and required and not default:
                     print("Error: a value is required")
