@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2020-2026 James Cherti
 # URL: https://github.com/jamescherti/git-commitflow
