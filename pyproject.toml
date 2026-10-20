@@ -31,7 +31,9 @@ authors = [
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.9, <4"
-dependencies = []
+dependencies = [
+  "prompt_toolkit",
+]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",

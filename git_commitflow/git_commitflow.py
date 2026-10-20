@@ -26,6 +26,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from prompt_toolkit import prompt as pt_prompt
+
 try:
     from colorama import Fore, Style
 except ImportError:
@@ -44,7 +46,7 @@ except ImportError:
 
 from .cache_file import CacheFile
 from .helpers import remove_matching_filenames, replace_home_with_tilde
-from .readline_manager import ReadlineManager
+from .prompt_manager import PromptManager
 
 # TODO: Add configuration file for the following options:
 # GIT_DIFF_OPTS = ['--', ':!*.asc', ':!*vault.yaml', ':!*vault.yml']
@@ -71,15 +73,15 @@ class GitCommitFlow:
         self.git_repo_dir: Path = self._find_git_repo_dir()
         self.branch: str = self._get_first_line_cmd("git symbolic-ref --short HEAD")
         self.amount_commits: int = self._count_commits()
-        self.readline_manager: ReadlineManager = self._init_prompt_and_history()
+        self.prompt_manager: PromptManager = self._init_prompt_and_history()
         self.cache: CacheFile = CacheFile(CACHE_FILE)
 
-    def _init_prompt_and_history(self) -> ReadlineManager:
+    def _init_prompt_and_history(self) -> PromptManager:
         """
         Initialize history and prompt manager.
 
-        :return: Configured ReadlineManager instance.
-        :rtype: ReadlineManager
+        :return: Configured PromptManager instance.
+        :rtype: PromptManager
         """
         # History
         prompt_history_file: Path | None = None
@@ -94,7 +96,7 @@ class GitCommitFlow:
 
         logging.debug("[DEBUG] History file: %s", str(prompt_history_file))
 
-        return ReadlineManager(
+        return PromptManager(
             history_file=prompt_history_file, history_length=HISTORY_LENGTH
         )
 
@@ -475,7 +477,12 @@ class GitCommitFlow:
 
             print()
             while True:
-                answer: str = input("git add? [y,n] ")
+                try:
+                    answer: str = pt_prompt("git add? [y,n] ")
+                except (KeyboardInterrupt, EOFError):
+                    print()
+                    sys.exit(1)
+
                 if answer.lower() == "y":
                     self._run(["git", "add"] + untracked_paths)
                     break
@@ -513,55 +520,19 @@ class GitCommitFlow:
                 # Ignore errors
                 pass
 
-            # Reset terminal attributes to prevent terminal and readline
-            # corruption
+            # Reset terminal attributes to prevent terminal corruption
             sys.stdout.write(Style.RESET_ALL)
-
-            # term_show_cursor: str = "\033[?25h"
-            # disable_bracketed_paste: str = "\033[?2004l"
-            # carriage_return: str = "\r"
-            # terminal_reset_seq: str = (
-            #     f"{Style.RESET_ALL}{term_show_cursor}"
-            #     f"{disable_bracketed_paste}{carriage_return}"
-            # )
-            # sys.stdout.write(terminal_reset_seq)
-
             sys.stdout.flush()
 
         git_name: str = self.git_config_get("user.name", "Unknown")
-        # git_email: str = self.git_config_get(
-        #     "user.email", "unknown@domain.ext")
-        # git_author = f"{git_name} <{git_email}>"
         git_author: str = f"{git_name}"
-
-        # commit_message = self.git_config_get("custom.commit-message").strip()
-        # previous_message = ""
-        # if commit_message:
-        #     print(Fore.YELLOW + commit_message + Fore.RESET)
 
         prompt: str = "Commit message: "
         if self.amount_commits > 0:
-            # previous_message = \
-            #     "\n".join(
-            #         self._run("git --no-pager log -1 --pretty=%B")).rstrip()
-            # prompt = (
-            #     Fore.YELLOW + self.git_repo_dir.name +
-            #     Fore.RESET + " " +
-            #     f"({Fore.YELLOW + self.branch + Fore.RESET}): "
-            #     f"{Fore.YELLOW + git_author + Fore.RESET}> ")
             prompt = self.git_repo_dir.name + f" ({self.branch}): {git_author}> "
-            # print(Fore.YELLOW + previous_message + Fore.RESET)
-            # self.readline_manager.append_to_history(previous_message)
 
-        # commit_message = self.prompt_git_commit_message(prompt,
-        #                                                 commit_message)
         commit_message: str = self.prompt_git_commit_message(prompt, "")
 
-        # TODO: add a confirmation?
-        # subprocess.check_call(["git", "status"])
-
-        # TODO: move this to a function
-        # logging.debug("[DEBUG] Previous message: %s", previous_message)
         logging.debug("[DEBUG] Commit message: %s", commit_message)
 
         return commit_message
@@ -579,35 +550,25 @@ class GitCommitFlow:
         """
         while True:
             try:
-                commit_message = self.readline_manager.readline_input(
+                commit_message = self.prompt_manager.prompt_input(
                     prompt=prompt, complete_with=["/reset", "/edit", "/skip"]
                 )
             except KeyboardInterrupt:
                 sys.exit(0)
 
             if commit_message == "/reset":
-                if self.confirm(
-                    "Are you sure you want to cancel and run 'git reset --hard HEAD'?"
-                ):
-                    try:
-                        subprocess.check_call(["git", "reset", "--hard", "HEAD"])
-                        print(
-                            f"{Fore.GREEN}[RESET] git reset --hard HEAD "
-                            f"was successful.{Fore.RESET}"
-                        )
-                        sys.exit(0)
-                    except subprocess.CalledProcessError:
-                        print(
-                            f"{Fore.RED}[RESET] git reset --hard HEAD "
-                            f"failed.{Fore.RESET}"
-                        )
-                        sys.exit(1)
-                else:
+                try:
+                    subprocess.check_call(["git", "reset", "--hard", "HEAD"])
                     print(
-                        f"{Fore.YELLOW}[RESET] Aborted. You can continue "
-                        f"typing your commit message.{Fore.RESET}"
+                        f"{Fore.GREEN}[RESET] git reset --hard HEAD "
+                        f"was successful.{Fore.RESET}"
                     )
-                    continue
+                    sys.exit(0)
+                except subprocess.CalledProcessError:
+                    print(
+                        f"{Fore.RED}[RESET] git reset --hard HEAD failed.{Fore.RESET}"
+                    )
+                    sys.exit(1)
 
             if commit_message == "/edit":
                 break
@@ -641,8 +602,8 @@ class GitCommitFlow:
         """
         while True:
             try:
-                answer: str = input(f"{prompt} [y,n] ")
-            except KeyboardInterrupt:
+                answer: str = pt_prompt(f"{prompt} [y,n] ")
+            except (KeyboardInterrupt, EOFError):
                 print()
                 sys.exit(1)
 

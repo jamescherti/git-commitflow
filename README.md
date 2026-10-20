@@ -21,7 +21,7 @@ Running **git-commitflow** guides you through the following steps in order:
 
 Optional (`-p` flag) makes **git-commitflow** push updates to the remote repository (`git push`). The references are only pushed when they have never been pushed before.
 
-When prompted for a commit message, the user can press the up arrow to quickly access previous messages via the readline prompt history. Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
+When prompted for a commit message, the user can press the up arrow to quickly access previous messages via the prompt history. Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
 
 ## Requirements
 
