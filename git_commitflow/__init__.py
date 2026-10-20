@@ -19,7 +19,6 @@
 """Git commit and push helper."""
 
 import logging
-import os
 import subprocess
 import sys
 from pathlib import Path
