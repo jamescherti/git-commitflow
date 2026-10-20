@@ -19,6 +19,7 @@
 """Git commitflow command-line interface."""
 
 import argparse
+import contextlib
 import logging
 import shlex
 import subprocess
@@ -33,6 +34,8 @@ try:
 except ImportError:
 
     class Fore:  # type: ignore
+        """Fallback ANSI foreground colors when colorama is unavailable."""
+
         WHITE: str = ""
         GREEN: str = ""
         RED: str = ""
@@ -41,6 +44,8 @@ except ImportError:
         RESET: str = ""
 
     class Style:  # type: ignore
+        """Fallback ANSI style attributes when colorama is unavailable."""
+
         RESET_ALL: str = ""
 
 
@@ -62,11 +67,10 @@ HISTORY_LENGTH: int = 256
 
 
 class GitCommitFlow:
-    """
-    Main controller for the Git commit workflow.
-    """
+    """Main controller for the Git commit workflow."""
 
     def __init__(self) -> None:
+        """Initialize the GitCommitFlow controller."""
         self.args: argparse.Namespace = self._parse_args()
         GIT_COMMITFLOW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -145,20 +149,18 @@ class GitCommitFlow:
         return parser.parse_args()
 
     def main(self) -> None:
-        """
-        Execute the main workflow.
-        """
+        """Execute the main workflow."""
         errno: int = 0
 
-        if self.amount_commits > 0:
-            if (
-                len(
-                    self._run("git --no-pager diff --name-only --diff-filter=TXBU HEAD")
-                )
-                > 0
-            ):
-                print(f"There is an issue in the repository '{self.git_repo_dir}'.")
-                sys.exit(1)
+        if (
+            self.amount_commits > 0
+            and len(
+                self._run("git --no-pager diff --name-only --diff-filter=TXBU HEAD")
+            )
+            > 0
+        ):
+            print(f"There is an issue in the repository '{self.git_repo_dir}'.")
+            sys.exit(1)
 
         # Buggy
         # self.git_submodule_foreach()
@@ -172,7 +174,7 @@ class GitCommitFlow:
             if not self.args.files:
                 self.git_add()
             else:
-                self._run(["git", "add", "--"] + self.args.files)
+                self._run(["git", "add", "--", *self.args.files])
             errno = self.git_ci()
         else:
             print(f"[COMMIT] Nothing to commit (Path: '{self.git_repo_dir}').")
@@ -214,7 +216,7 @@ class GitCommitFlow:
 
     def git_ci(self) -> int:
         """
-        Function that performs the git commit.
+        Perform the git commit.
 
         :return: Exit status code.
         :rtype: int
@@ -260,7 +262,7 @@ class GitCommitFlow:
 
             print("[RUN] git commit", " ".join(git_commit_opts))
             try:
-                subprocess.check_call(["git", "commit"] + git_commit_opts)
+                subprocess.check_call(["git", "commit", *git_commit_opts])
 
                 print()
                 print(Fore.GREEN + "[COMMIT] git commit was SUCCESSFUL." + Fore.RESET)
@@ -448,9 +450,7 @@ class GitCommitFlow:
         return []
 
     def git_add(self) -> None:
-        """
-        Interactive file addition to Git index.
-        """
+        """Interactive file addition to Git index."""
         list_untracked_files: list[str] = self._run(
             [
                 "git",
@@ -484,7 +484,7 @@ class GitCommitFlow:
                     sys.exit(1)
 
                 if answer.lower() == "y":
-                    self._run(["git", "add"] + untracked_paths)
+                    self._run(["git", "add", *untracked_paths])
                     break
 
                 if answer.lower() == "n":
@@ -514,11 +514,8 @@ class GitCommitFlow:
                     cmd.append("--")
                 cmd.extend(self.args.files)
 
-            try:
+            with contextlib.suppress(subprocess.CalledProcessError):
                 subprocess.check_call(cmd)
-            except subprocess.CalledProcessError:
-                # Ignore errors
-                pass
 
             # Reset terminal attributes to prevent terminal corruption
             sys.stdout.write(Style.RESET_ALL)

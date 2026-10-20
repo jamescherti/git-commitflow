@@ -32,6 +32,12 @@ class CacheFile:
     """
 
     def __init__(self, cache_filename: Path) -> None:
+        """
+        Initialize the cache file manager.
+
+        :param cache_filename: The path to the cache file.
+        :type cache_filename: Path
+        """
         self.cache_filename: Path = cache_filename
         self._cache: dict[str, Any] = {}
         self._modified: bool = True
@@ -70,22 +76,18 @@ class CacheFile:
             return default
 
     def load(self) -> None:
-        """
-        Load the cache from the file.
-        """
+        """Load the cache from the file."""
         self.cache_filename.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with open(self.cache_filename, encoding="utf-8") as fhandler:
+            with self.cache_filename.open(encoding="utf-8") as fhandler:
                 self._cache = dict(json.load(fhandler))
         except (FileNotFoundError, json.JSONDecodeError):
             self._cache = {}
 
     def save(self) -> None:
-        """
-        Save the cache to the file.
-        """
+        """Save the cache to the file."""
         if not self._modified:
             return
 
-        with open(self.cache_filename, "w", encoding="utf-8") as fhandler:
+        with self.cache_filename.open("w", encoding="utf-8") as fhandler:
             json.dump(self._cache, fhandler, indent=2)

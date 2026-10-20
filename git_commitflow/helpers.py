@@ -18,7 +18,6 @@
 #
 """Git Commitflow helpers."""
 
-import os
 import re
 from pathlib import Path
 
@@ -51,8 +50,6 @@ def remove_matching_filenames(filenames: list[str], patterns: list[str]) -> list
     filtered_filenames = [
         filename
         for filename in filenames
-        if not any(
-            pattern.match(os.path.basename(filename)) for pattern in compiled_patterns
-        )
+        if not any(pattern.match(Path(filename).name) for pattern in compiled_patterns)
     ]
     return filtered_filenames
