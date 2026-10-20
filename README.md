@@ -14,13 +14,9 @@ For example, you finally fix a bug, run `git add .` and `git commit -a -m "Commi
 Running **git-commitflow** guides you through the following steps in order:
 
 - Prompting to add files (`git add`).
-
 - Displaying `git diff` to verify accuracy and prevent mistakes before committing.
-
 - Prompting to enter a commit message. (The interactive prompt supports `Tab` autocompletion for commands such as `/reset` to cancel the diff and hard reset the repository, `/edit` to open the Git editor, and `/skip` to exit the program without making any changes.)
-
 - It commits the changes (`git commit`).
-
 - Optional (`-p` / `--push` flag): Synchronizes changes and pushes updates to the remote repository (`git push`). Before pushing, it fetches remote changes and attempts a fast-forward merge (`--ff-only`); if the merge fails, it prompts the user to confirm whether to proceed with a rebase (`--rebase` and `--autostash`). The references are only pushed when they have never been pushed before.
 
 ### Interactive prompt features
@@ -34,11 +30,7 @@ When prompted for a commit message, the interactive prompt (powered by `prompt_t
 ## Requirements
 
 - git >= 2.6
-
-- Python and pip
-
-- [prompt_toolkit](https://pypi.org/project/prompt-toolkit/) (installed automatically with `pip`)
-
+- Python, pip, and [prompt_toolkit](https://pypi.org/project/prompt-toolkit/) (installed automatically with `pip`)
 
 ## Installation
 
