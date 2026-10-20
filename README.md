@@ -27,9 +27,9 @@ Running **git-commitflow** guides you through the following steps in order:
 
 When prompted for a commit message, the interactive prompt (powered by `prompt_toolkit`) supports:
 
-- **History & cursor navigation**: Use the standard arrow keys (`Up`, `Down`, `Left`, `Right`) or Vim-style `Alt+k` (up), `Alt+j` (down), `Alt+h` (left), and `Alt+l` (right) to move the cursor and cycle through previous commit messages stored in the repository's history.
-- **On-demand `Tab` completion**: Press `Tab` to autocomplete built-in slash commands (`/reset`, `/edit`, `/skip`) without distracting pop-up menus appearing while you type.
-- **Git editor integration**: Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
+- Use the standard arrow keys (`Up`, `Down`, `Left`, `Right`) or Vim-style `Alt+k` (up), `Alt+j` (down), `Alt+h` (left), and `Alt+l` (right) to move the cursor and cycle through previous commit messages stored in the repository's history.
+- Press `Tab` to autocomplete built-in slash commands (`/reset`, `/edit`, `/skip`) without distracting pop-up menus appearing while you type.
+- Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
 
 ## Requirements
 
