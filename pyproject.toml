@@ -22,7 +22,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "git-commitflow"
-version = "1.2.3"
+version = "1.2.4"
 description = "A git add/commit/push helper"
 readme = "README.md"
 authors = [
