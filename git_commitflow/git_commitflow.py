@@ -247,7 +247,7 @@ class GitCommitFlow:
                 cmd.extend(["--"])
                 cmd.extend(self.args.files)
             print("[RUN] ", subprocess.list2cmdline(cmd))
-            subprocess.call(cmd)
+            return subprocess.call(cmd)
         else:
             if commit_message:
                 git_commit_opts.extend(["-m", commit_message])
