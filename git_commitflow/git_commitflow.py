@@ -96,7 +96,9 @@ class GitCommitFlow:
             print("Error: The .git directory could not be located", file=sys.stderr)
             sys.exit(1)
 
-        prompt_history_file = Path(dot_git_dir).joinpath("git-commitflow-history.rl")
+        prompt_history_file = (
+            Path(dot_git_dir).resolve().joinpath("git-commitflow-history.rl")
+        )
 
         logging.debug("[DEBUG] History file: %s", str(prompt_history_file))
 
@@ -280,10 +282,15 @@ class GitCommitFlow:
         :return: Success boolean flag.
         :rtype: bool
         """
+        if self.amount_commits == 0 or not self._run(["git", "remote", "-v"]):
+            return True  # No commits or no git remote
+
         # --------------
         # Load cache
         # --------------
-        remote_url: str = self._get_first_line_cmd("git ls-remote  --get-url")
+        remote_url: str = self._get_first_line_cmd("git ls-remote --get-url")
+        if not remote_url:
+            return False
 
         # ------------------------
         # Init commit refs (cache)
@@ -305,8 +312,6 @@ class GitCommitFlow:
         # GIT PUSH
         # -----------
         print(f"{Fore.LIGHTYELLOW_EX}[GIT PUSH] {self.git_repo_dir}{Fore.RESET}")
-        if not self._run(["git", "remote", "-v"]):
-            return True  # No git remote
 
         try:
             # Display the remote branch that is tracked by the current local
@@ -325,8 +330,8 @@ class GitCommitFlow:
         if subprocess.call(["git", "merge", "--ff-only"]) != 0:
             git_pull_cmd: list[str] = ["git", "pull", "--rebase", "--autostash"]
             if self.confirm(
-                "Git failed to merge fast-forward."
-                "Do you want to run '" + subprocess.list2cmdline(git_pull_cmd) + "'"
+                "Git failed to merge fast-forward. "
+                "Do you want to run '" + subprocess.list2cmdline(git_pull_cmd) + "'?"
             ):
                 if subprocess.call(git_pull_cmd) != 0:
                     print("Error with 'git pull --rebase'...")
@@ -442,7 +447,7 @@ class GitCommitFlow:
             command_list: list[str] = shlex.split(command)
         else:
             command_list = command
-        result: subprocess.CompletedProcess = subprocess.run(
+        result: subprocess.CompletedProcess[Any] = subprocess.run(
             command_list, stdout=subprocess.PIPE, check=check, text=text
         )
         if text:
@@ -604,7 +609,8 @@ class GitCommitFlow:
                 print()
                 sys.exit(1)
 
+            answer = answer.strip().lower()
             if answer not in ["y", "n"]:
                 continue
 
-            return bool(answer == "y")
+            return answer == "y"

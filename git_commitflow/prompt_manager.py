@@ -106,12 +106,17 @@ class PromptManager:
     def read_history_file(self) -> None:
         """Read the prompt history from the specified file."""
         if self.history_file and self.history_file.exists():
-            with self.history_file.open(encoding="utf-8") as fhandler:
-                lines: list[str] = [
-                    line.rstrip("\r\n")
-                    for line in fhandler
-                    if line.rstrip("\r\n") and not line.startswith("/")
-                ]
+            try:
+                with self.history_file.open(
+                    encoding="utf-8", errors="replace"
+                ) as fhandler:
+                    lines: list[str] = [
+                        line.rstrip("\r\n")
+                        for line in fhandler
+                        if line.rstrip("\r\n") and not line.startswith("/")
+                    ]
+            except OSError:
+                return
 
             if self.history_length >= 0:
                 lines = lines[-self.history_length :]

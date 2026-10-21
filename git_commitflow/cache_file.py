@@ -40,7 +40,7 @@ class CacheFile:
         """
         self.cache_filename: Path = cache_filename
         self._cache: dict[str, Any] = {}
-        self._modified: bool = True
+        self._modified: bool = False
 
     def set(self, key: str, value: Any) -> None:
         """
@@ -51,11 +51,6 @@ class CacheFile:
         :param value: The value to store.
         :type value: Any
         """
-        try:
-            self._cache[key]
-        except KeyError:
-            self._cache[key] = {}
-
         self._cache[key] = value
         self._modified = True
 
@@ -80,14 +75,18 @@ class CacheFile:
         self.cache_filename.parent.mkdir(parents=True, exist_ok=True)
         try:
             with self.cache_filename.open(encoding="utf-8") as fhandler:
-                self._cache = dict(json.load(fhandler))
-        except (FileNotFoundError, json.JSONDecodeError):
+                data = json.load(fhandler)
+                self._cache = data if isinstance(data, dict) else {}
+        except (OSError, json.JSONDecodeError):
             self._cache = {}
+        self._modified = False
 
     def save(self) -> None:
         """Save the cache to the file."""
         if not self._modified:
             return
 
+        self.cache_filename.parent.mkdir(parents=True, exist_ok=True)
         with self.cache_filename.open("w", encoding="utf-8") as fhandler:
             json.dump(self._cache, fhandler, indent=2)
+        self._modified = False
