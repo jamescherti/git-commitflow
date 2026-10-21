@@ -84,6 +84,14 @@ class PromptManager:
         def _down(event: KeyPressEvent) -> None:
             event.current_buffer.auto_down(count=event.arg)
 
+        @kb.add("escape", "H")
+        def _word_left(event: KeyPressEvent) -> None:
+            get_by_name("backward-word").call(event)
+
+        @kb.add("escape", "L")
+        def _word_right(event: KeyPressEvent) -> None:
+            get_by_name("forward-word").call(event)
+
         return kb
 
     def _init_history(self) -> None:

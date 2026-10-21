@@ -24,6 +24,7 @@ Running **git-commitflow** guides you through the following steps in order:
 When prompted for a commit message, the interactive prompt (powered by `prompt_toolkit`) supports:
 
 - Use the standard arrow keys (`Up`, `Down`, `Left`, `Right`) or Vim-style `Alt+k` (up), `Alt+j` (down), `Alt+h` (left), and `Alt+l` (right) to move the cursor and cycle through previous commit messages stored in the repository's history.
+- Jump by word backward using `Alt+Shift+Left` and forward using `Alt+Shift+Right`.
 - Press `Tab` to autocomplete built-in slash commands (`/reset`, `/edit`, `/skip`) without distracting pop-up menus appearing while you type.
 - Entering `/edit` opens the default Git editor, similar to the behavior when executing `git commit -a`.
 
@@ -81,12 +82,9 @@ git commitflow
 
 This command will guide you through the following steps interactively:
 
-- **Stage untracked files**: Prompts you to `git add` any untracked files that haven't been staged.
-
-- **Review changes**: Displays a diff of your changes, allowing you to confirm whether you want to proceed with the commit.
-
-- **Commit changes**: Enter a commit message (using arrow keys or `Alt+h`/`j`/`k`/`l` to navigate history and text, or `Tab` to complete `/reset`, `/edit`, and `/skip`) to finalize the commit.
-
+* **Stage untracked files**: Prompts you to `git add` any untracked files that haven't been staged.
+* **Review changes**: Displays a diff of your changes, allowing you to confirm whether you want to proceed with the commit.
+* **Commit changes**: Enter a commit message (using arrow keys or `Alt+h`/`j`/`k`/`l` to navigate history and text, `Alt+Shift+Left`/`Alt+Shift+Right` to jump words, or `Tab` to complete `/reset`, `/edit`, and `/skip`) to finalize the commit.
 
 If you also wish to synchronize and push the changes, you can use the `--push` option:
 
