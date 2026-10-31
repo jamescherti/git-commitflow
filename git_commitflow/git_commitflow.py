@@ -503,14 +503,15 @@ class GitCommitFlow:
         :return: Commit message.
         :rtype: str
         """
+        diff_output: str = ""
         if self.amount_commits > 0:
             # Diff against HEAD shows both staged and unstaged changes
             cmd: list[str] = [
                 "git",
-                "--paginate",
+                "--no-pager",
                 "diff",
                 "--diff-filter=d",
-                "--color",
+                "--color=always",
                 "HEAD",
             ]
             cmd.extend(GIT_DIFF_OPTS)
@@ -521,7 +522,14 @@ class GitCommitFlow:
                 cmd.extend(self.args.files)
 
             with contextlib.suppress(subprocess.CalledProcessError):
-                subprocess.check_call(cmd)
+                result: subprocess.CompletedProcess[str] = subprocess.run(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    check=False,
+                    text=True,
+                    errors="replace",
+                )
+                diff_output = result.stdout or ""
 
             # Reset terminal attributes to prevent terminal corruption
             sys.stdout.write(Style.RESET_ALL)
@@ -534,13 +542,17 @@ class GitCommitFlow:
         if self.amount_commits > 0:
             prompt = self.git_repo_dir.name + f" ({self.branch}): {git_author}> "
 
-        commit_message: str = self.prompt_git_commit_message(prompt, "")
+        commit_message: str = self.prompt_git_commit_message(
+            prompt, "", diff_text=diff_output
+        )
 
         logging.debug("[DEBUG] Commit message: %s", commit_message)
 
         return commit_message
 
-    def prompt_git_commit_message(self, prompt: str, commit_message: str) -> str:
+    def prompt_git_commit_message(
+        self, prompt: str, commit_message: str, diff_text: str = ""
+    ) -> str:
         """
         Interactive loop prompting for a commit message.
 
@@ -548,13 +560,17 @@ class GitCommitFlow:
         :type prompt: str
         :param commit_message: Initial default value.
         :type commit_message: str
+        :param diff_text: Git diff output to display in the pager pane.
+        :type diff_text: str
         :return: Final commit message.
         :rtype: str
         """
         while True:
             try:
                 commit_message = self.prompt_manager.prompt_input(
-                    prompt=prompt, complete_with=["/reset", "/edit", "/skip"]
+                    prompt=prompt,
+                    complete_with=["/reset", "/edit", "/skip"],
+                    diff_text=diff_text,
                 ).strip()
             except (KeyboardInterrupt, EOFError):
                 sys.exit(0)
