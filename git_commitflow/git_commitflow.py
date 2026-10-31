@@ -232,9 +232,16 @@ class GitCommitFlow:
         use_git_commit: bool = False
         try:
             commit_message: str = self.diff_and_get_commit_message()
-        except (KeyboardInterrupt, EOFError):
+        except KeyboardInterrupt:
             print()
             sys.exit(1)
+        except EOFError:
+            print()
+            commit_message = "/skip"
+
+        if commit_message == "/skip":
+            print("[COMMIT] Skipped.")
+            sys.exit(0)
 
         if commit_message == "/edit":
             use_git_commit = True
@@ -556,8 +563,12 @@ class GitCommitFlow:
                 commit_message = self.prompt_manager.prompt_input(
                     prompt=prompt, complete_with=["/reset", "/edit", "/skip"]
                 ).strip()
-            except (KeyboardInterrupt, EOFError):
-                sys.exit(0)
+            except KeyboardInterrupt:
+                print()
+                sys.exit(1)
+            except EOFError:
+                print()
+                return "/skip"
 
             if commit_message == "/reset":
                 try:
@@ -566,18 +577,15 @@ class GitCommitFlow:
                         f"{Fore.GREEN}[RESET] git reset --hard HEAD "
                         f"was successful.{Fore.RESET}"
                     )
-                    sys.exit(0)
+                    return "/skip"
                 except subprocess.CalledProcessError:
                     print(
                         f"{Fore.RED}[RESET] git reset --hard HEAD failed.{Fore.RESET}"
                     )
                     sys.exit(1)
 
-            if commit_message == "/edit":
+            if commit_message in ("/edit", "/skip"):
                 break
-
-            if commit_message == "/skip":
-                sys.exit(0)
 
             if commit_message == "":
                 continue
