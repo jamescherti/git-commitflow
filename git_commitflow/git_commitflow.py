@@ -232,7 +232,7 @@ class GitCommitFlow:
         use_git_commit: bool = False
         try:
             commit_message: str = self.diff_and_get_commit_message()
-        except EOFError:
+        except (KeyboardInterrupt, EOFError):
             print()
             sys.exit(1)
 
@@ -488,11 +488,12 @@ class GitCommitFlow:
                     print()
                     sys.exit(1)
 
-                if answer.lower() == "y":
+                answer = answer.strip().lower()
+                if answer == "y":
                     self._run(["git", "add", *untracked_paths])
                     break
 
-                if answer.lower() == "n":
+                if answer == "n":
                     break
 
     def diff_and_get_commit_message(self) -> str:
@@ -554,8 +555,8 @@ class GitCommitFlow:
             try:
                 commit_message = self.prompt_manager.prompt_input(
                     prompt=prompt, complete_with=["/reset", "/edit", "/skip"]
-                )
-            except KeyboardInterrupt:
+                ).strip()
+            except (KeyboardInterrupt, EOFError):
                 sys.exit(0)
 
             if commit_message == "/reset":

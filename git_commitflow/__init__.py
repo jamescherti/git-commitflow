@@ -60,6 +60,6 @@ def git_commitflow_cli() -> None:
     except subprocess.CalledProcessError as main_proc_err:
         print(f"Error: {main_proc_err}", file=sys.stderr)
         sys.exit(main_proc_err.returncode or 1)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         print(file=sys.stderr)
         sys.exit(130)
