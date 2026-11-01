@@ -232,12 +232,9 @@ class GitCommitFlow:
         use_git_commit: bool = False
         try:
             commit_message: str = self.diff_and_get_commit_message()
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             print()
             sys.exit(1)
-        except EOFError:
-            print()
-            commit_message = "/skip"
 
         if commit_message == "/skip":
             print("[COMMIT] Skipped.")
@@ -563,12 +560,9 @@ class GitCommitFlow:
                 commit_message = self.prompt_manager.prompt_input(
                     prompt=prompt, complete_with=["/reset", "/edit", "/skip"]
                 ).strip()
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, EOFError):
                 print()
                 sys.exit(1)
-            except EOFError:
-                print()
-                return "/skip"
 
             if commit_message == "/reset":
                 try:
