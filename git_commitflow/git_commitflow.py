@@ -317,32 +317,6 @@ class GitCommitFlow:
         # -----------
         print(f"{Fore.LIGHTYELLOW_EX}[GIT PUSH] {self.git_repo_dir}{Fore.RESET}")
 
-        try:
-            # Display the remote branch that is tracked by the current local
-            # branch The error message will be: fatal: no such branch: 'master'
-            subprocess.check_call(
-                ["git", "rev-parse", "--symbolic-full-name", "HEAD@{u}"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-
-            subprocess.check_call(["git", "fetch", "-a"])
-        except subprocess.CalledProcessError as proc_err:
-            print(f"Error: {proc_err}", file=sys.stderr)
-            return False
-
-        if subprocess.call(["git", "merge", "--ff-only"]) != 0:
-            git_pull_cmd: list[str] = ["git", "pull", "--rebase", "--autostash"]
-            if self.confirm(
-                "Git failed to merge fast-forward. "
-                "Do you want to run '" + subprocess.list2cmdline(git_pull_cmd) + "'?"
-            ):
-                if subprocess.call(git_pull_cmd) != 0:
-                    print("Error with 'git pull --rebase'...")
-                    return False
-            else:
-                return False
-
         print()
         print("[RUN] git push")
 
@@ -356,6 +330,34 @@ class GitCommitFlow:
         else:
             print()
             print(f"{Fore.RED}[PUSH] git commit and push FAILED.{Fore.RESET}")
+
+            try:
+                # Display the remote branch that is tracked by the current local branch
+                # The error message will be: fatal: no such branch: 'master'
+                subprocess.check_call(
+                    ["git", "rev-parse", "--symbolic-full-name", "HEAD@{u}"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+
+                subprocess.check_call(["git", "fetch", "-a"])
+            except subprocess.CalledProcessError as proc_err:
+                print(f"Error: {proc_err}", file=sys.stderr)
+                return False
+
+            if subprocess.call(["git", "merge", "--ff-only"]) != 0:
+                git_pull_cmd: list[str] = ["git", "pull", "--rebase", "--autostash"]
+                if self.confirm(
+                    "Git failed to merge fast-forward. "
+                    "Do you want to run '"
+                    + subprocess.list2cmdline(git_pull_cmd)
+                    + "'?"
+                ):
+                    if subprocess.call(git_pull_cmd) != 0:
+                        print("Error with 'git pull --rebase'...")
+                        return False
+                else:
+                    return False
 
         # ------------------
         # Update cache file
