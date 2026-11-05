@@ -287,18 +287,12 @@ class GitCommitFlow:
         :rtype: bool
         """
         if self.amount_commits == 0 or not self._run(["git", "remote", "-v"]):
-            return True  # No commits or no git remote
+            return True
 
-        # --------------
-        # Load cache
-        # --------------
         remote_url: str = self._get_first_line_cmd("git ls-remote --get-url")
         if not remote_url:
             return False
 
-        # ------------------------
-        # Init commit refs (cache)
-        # ------------------------
         git_push_commit_refs: dict[str, Any] = self.cache.get(
             "git_push_commit_refs", {}
         )
@@ -312,34 +306,38 @@ class GitCommitFlow:
             print(f"[PUSH] Already pushed: {self.git_repo_dir}")
             return True
 
-        # -----------
-        # GIT PUSH
-        # -----------
         print(f"{Fore.LIGHTYELLOW_EX}[GIT PUSH] {self.git_repo_dir}{Fore.RESET}")
 
-        print()
-        print("[RUN] git push")
+        max_attempts: int = 2
+        for attempt in range(max_attempts):
+            print()
+            print("[RUN] git push")
 
-        success: bool = False
-        if subprocess.call(["git", "push"]) == 0:
+            if subprocess.call(["git", "push"]) == 0:
+                print()
+                print(
+                    f"{Fore.GREEN}[PUSH] git commit and push were SUCCESSFUL.{Fore.RESET}"
+                )
+                git_push_commit_refs[remote_url][self.branch] = (
+                    self._get_first_line_cmd("git rev-parse --verify HEAD")
+                )
+                self.cache.set("git_push_commit_refs", git_push_commit_refs)
+                return True
+
             print()
-            print(
-                f"{Fore.GREEN}[PUSH] git commit and push were SUCCESSFUL.{Fore.RESET}"
-            )
-            success = True
-        else:
-            print()
-            print(f"{Fore.RED}[PUSH] git commit and push FAILED.{Fore.RESET}")
+            print(f"{Fore.RED}[PUSH] git push FAILED.{Fore.RESET}")
+
+            if attempt == max_attempts - 1:
+                return False
+
+            print("Attempting to synchronize with the remote...")
 
             try:
-                # Display the remote branch that is tracked by the current local branch
-                # The error message will be: fatal: no such branch: 'master'
                 subprocess.check_call(
                     ["git", "rev-parse", "--symbolic-full-name", "HEAD@{u}"],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
-
                 subprocess.check_call(["git", "fetch", "-a"])
             except subprocess.CalledProcessError as proc_err:
                 print(f"Error: {proc_err}", file=sys.stderr)
@@ -359,15 +357,7 @@ class GitCommitFlow:
                 else:
                     return False
 
-        # ------------------
-        # Update cache file
-        # ------------------
-        if success:
-            commit_ref = self._get_first_line_cmd("git rev-parse --verify HEAD")
-            git_push_commit_refs[remote_url][self.branch] = commit_ref
-            self.cache.set("git_push_commit_refs", git_push_commit_refs)
-
-        return success
+        return False
 
     def git_config_get(self, git_var: str, default_value: str = "") -> str:
         """
