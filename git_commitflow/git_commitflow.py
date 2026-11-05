@@ -316,7 +316,8 @@ class GitCommitFlow:
             if subprocess.call(["git", "push"]) == 0:
                 print()
                 print(
-                    f"{Fore.GREEN}[PUSH] git commit and push were SUCCESSFUL.{Fore.RESET}"
+                    f"{Fore.GREEN}[PUSH] git commit and push were "
+                    f"SUCCESSFUL.{Fore.RESET}"
                 )
                 git_push_commit_refs[remote_url][self.branch] = (
                     self._get_first_line_cmd("git rev-parse --verify HEAD")
