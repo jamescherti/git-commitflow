@@ -184,7 +184,7 @@ class GitCommitFlow:
         else:
             print(f"[COMMIT] Nothing to commit (Path: '{self.git_repo_dir}').")
 
-        if not errno and self.args.push:
+        if errno == 0 and self.args.push:
             try:
                 self.cache.load()
                 if not self.git_push():
