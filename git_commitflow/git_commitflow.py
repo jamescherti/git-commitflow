@@ -553,6 +553,61 @@ class GitCommitFlow:
 
         return commit_message
 
+    def _reset_hard(self) -> bool:
+        """
+        Safely execute git reset --hard HEAD with confirmation.
+
+        :return: True if the commit prompt should be skipped, False to continue.
+        :rtype: bool
+        """
+        # Check if HEAD exists (repository has at least one commit)
+        if (
+            subprocess.call(
+                ["git", "rev-parse", "--verify", "HEAD"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            != 0
+        ):
+            print(
+                f"{Fore.RED}Error: Repository does not have any commits yet "
+                f"(HEAD is unborn).{Fore.RESET}"
+            )
+            return False
+
+        # Check specifically for tracked modifications (staged or unstaged)
+        if (
+            subprocess.call(
+                ["git", "diff-index", "--quiet", "HEAD", "--"],
+                stderr=subprocess.DEVNULL,
+            )
+            == 0
+        ):
+            print("No tracked changes to reset (only untracked files are present).")
+            return True
+
+        # Preview the files that will be discarded
+        print("The following tracked changes will be permanently discarded:")
+        print("-" * 60)
+        subprocess.call(["git", "status", "--short", "--untracked-files=no"])
+        print("-" * 60)
+
+        # Prompt for confirmation using the existing confirm() method
+        if not self.confirm("Are you sure you want to run 'git reset --hard HEAD'?"):
+            print("Reset aborted.")
+            return False
+
+        # Execute the reset
+        try:
+            subprocess.check_call(["git", "reset", "--hard", "HEAD"])
+            print(
+                f"{Fore.GREEN}[RESET] git reset --hard HEAD was successful.{Fore.RESET}"
+            )
+            return True
+        except subprocess.CalledProcessError:
+            print(f"{Fore.RED}[RESET] git reset --hard HEAD failed.{Fore.RESET}")
+            sys.exit(1)
+
     def prompt_git_commit_message(self, prompt: str, commit_message: str) -> str:
         """
         Interactive loop prompting for a commit message.
@@ -581,61 +636,9 @@ class GitCommitFlow:
                 continue
 
             if commit_message == "/reset":
-                # Check if HEAD exists (repository has at least one commit)
-                if (
-                    subprocess.call(
-                        ["git", "rev-parse", "--verify", "HEAD"],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
-                    != 0
-                ):
-                    print(
-                        f"{Fore.RED}Error: Repository does not have any commits yet "
-                        f"(HEAD is unborn).{Fore.RESET}"
-                    )
-                    continue
-
-                # Check specifically for tracked modifications (staged or unstaged)
-                if (
-                    subprocess.call(
-                        ["git", "diff-index", "--quiet", "HEAD", "--"],
-                        stderr=subprocess.DEVNULL,
-                    )
-                    == 0
-                ):
-                    print(
-                        "No tracked changes to reset (only untracked files "
-                        "are present)."
-                    )
+                if self._reset_hard():
                     return "/skip"
-
-                # Preview the files that will be discarded
-                print("The following tracked changes will be permanently discarded:")
-                print("-" * 60)
-                subprocess.call(["git", "status", "--short", "--untracked-files=no"])
-                print("-" * 60)
-
-                # Prompt for confirmation using the existing confirm() method
-                if not self.confirm(
-                    "Are you sure you want to run 'git reset --hard HEAD'?"
-                ):
-                    print("Reset aborted.")
-                    continue
-
-                # Execute the reset
-                try:
-                    subprocess.check_call(["git", "reset", "--hard", "HEAD"])
-                    print(
-                        f"{Fore.GREEN}[RESET] git reset --hard HEAD "
-                        f"was successful.{Fore.RESET}"
-                    )
-                    return "/skip"
-                except subprocess.CalledProcessError:
-                    print(
-                        f"{Fore.RED}[RESET] git reset --hard HEAD failed.{Fore.RESET}"
-                    )
-                    sys.exit(1)
+                continue
 
             if commit_message in ("/edit", "/skip"):
                 break
