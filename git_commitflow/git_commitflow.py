@@ -629,11 +629,12 @@ class GitCommitFlow:
             if len(commit_message) < SHORT_COMMIT_MESSAGE_SIZE:
                 if not self.confirm(
                     f"The commit message is short ({len(commit_message)} chars). "
-                    "Confirm commit?"
+                    "Commit?"
                 ):
                     continue
             elif elapsed_time >= PROMPT_IDLE_TIMEOUT and not self.confirm(
-                "The prompt was idle for more than 3 minutes. Confirm commit?"
+                f"The prompt was idle for more than {int(PROMPT_IDLE_TIMEOUT / 60)} "
+                "minutes. Commit?"
             ):
                 continue
 
