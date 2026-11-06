@@ -582,6 +582,49 @@ class GitCommitFlow:
                 continue
 
             if commit_message == "/reset":
+                # Check if HEAD exists (repository has at least one commit)
+                if (
+                    subprocess.call(
+                        ["git", "rev-parse", "--verify", "HEAD"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                    != 0
+                ):
+                    print(
+                        f"{Fore.RED}Error: Repository does not have any commits yet "
+                        f"(HEAD is unborn).{Fore.RESET}"
+                    )
+                    continue
+
+                # Check specifically for tracked modifications (staged or unstaged)
+                if (
+                    subprocess.call(
+                        ["git", "diff-index", "--quiet", "HEAD", "--"],
+                        stderr=subprocess.DEVNULL,
+                    )
+                    == 0
+                ):
+                    print(
+                        "No tracked changes to reset (only untracked files "
+                        "are present)."
+                    )
+                    return "/skip"
+
+                # Preview the files that will be discarded
+                print("The following tracked changes will be permanently discarded:")
+                print("-" * 60)
+                subprocess.call(["git", "status", "--short", "--untracked-files=no"])
+                print("-" * 60)
+
+                # Prompt for confirmation using the existing confirm() method
+                if not self.confirm(
+                    "Are you sure you want to run 'git reset --hard HEAD'?"
+                ):
+                    print("Reset aborted.")
+                    continue
+
+                # Execute the reset
                 try:
                     subprocess.check_call(["git", "reset", "--hard", "HEAD"])
                     print(
