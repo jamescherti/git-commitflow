@@ -242,7 +242,6 @@ class GitCommitFlow:
             sys.exit(1)
 
         if commit_message == "/skip":
-            print("[COMMIT] Skipped.")
             sys.exit(0)
 
         if commit_message == "/edit":
