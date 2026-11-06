@@ -180,11 +180,14 @@ class GitCommitFlow:
                 self.git_add()
             else:
                 self._run(["git", "add", "--", *self.args.files])
+
+            # Commit
             errno = self.git_ci()
         else:
             print(f"[COMMIT] Nothing to commit (Path: '{self.git_repo_dir}').")
 
         if errno == 0 and self.args.push:
+            self.amount_commits = self._count_commits()
             try:
                 self.cache.load()
                 if not self.git_push():
@@ -537,29 +540,7 @@ class GitCommitFlow:
         :return: Commit message.
         :rtype: str
         """
-        if self.amount_commits > 0:
-            # Diff against HEAD shows both staged and unstaged changes
-            cmd: list[str] = [
-                "git",
-                "--paginate",
-                "diff",
-                "--diff-filter=d",
-                "--color",
-                "HEAD",
-            ]
-            cmd.extend(GIT_DIFF_OPTS)
-
-            if self.args.files:
-                if "--" not in cmd:
-                    cmd.append("--")
-                cmd.extend(self.args.files)
-
-            with contextlib.suppress(subprocess.CalledProcessError):
-                subprocess.check_call(cmd)
-
-            # Reset terminal attributes to prevent terminal corruption
-            sys.stdout.write(Style.RESET_ALL)
-            sys.stdout.flush()
+        self._show_diff()
 
         git_name: str = self.git_config_get("user.name", "Unknown")
         git_author: str = f"{git_name}"
