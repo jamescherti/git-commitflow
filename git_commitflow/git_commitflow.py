@@ -24,6 +24,7 @@ import logging
 import shlex
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +61,8 @@ from .prompt_manager import PromptManager
 
 GIT_DIFF_OPTS: list[str] = []
 MIN_COMMIT_MESSAGE_SIZE: int = 1
+SHORT_COMMIT_MESSAGE_SIZE: int = 6
+PROMPT_IDLE_TIMEOUT: int = 180
 GIT_COMMITFLOW_DATA_DIR: Path = Path("~/.config/git-commitflow").expanduser()
 CACHE_FILE: Path = GIT_COMMITFLOW_DATA_DIR / "repo-data.json"
 IGNORE_FILENAMES_REGEX: list[str] = []
@@ -493,6 +496,32 @@ class GitCommitFlow:
                 if answer == "n":
                     break
 
+    def _show_diff(self) -> None:
+        """Display the git diff for the current repository or specified files."""
+        if self.amount_commits > 0:
+            # Diff against HEAD shows both staged and unstaged changes
+            cmd: list[str] = [
+                "git",
+                "--paginate",
+                "diff",
+                "--diff-filter=d",
+                "--color",
+                "HEAD",
+            ]
+            cmd.extend(GIT_DIFF_OPTS)
+
+            if self.args.files:
+                if "--" not in cmd:
+                    cmd.append("--")
+                cmd.extend(self.args.files)
+
+            with contextlib.suppress(subprocess.CalledProcessError):
+                subprocess.check_call(cmd)
+
+            # Reset terminal attributes to prevent terminal corruption
+            sys.stdout.write(Style.RESET_ALL)
+            sys.stdout.flush()
+
     def diff_and_get_commit_message(self) -> str:
         """
         Display diff and prompt user for a commit message.
@@ -549,13 +578,20 @@ class GitCommitFlow:
         :rtype: str
         """
         while True:
+            start_time: float = time.monotonic()
             try:
                 commit_message = self.prompt_manager.prompt_input(
-                    prompt=prompt, complete_with=["/reset", "/edit", "/skip"]
+                    prompt=prompt,
+                    complete_with=["/diff", "/edit", "/reset", "/skip"],
                 ).strip()
             except (KeyboardInterrupt, EOFError):
                 print()
                 sys.exit(1)
+            elapsed_time: float = time.monotonic() - start_time
+
+            if commit_message == "/diff":
+                self._show_diff()
+                continue
 
             if commit_message == "/reset":
                 try:
@@ -577,14 +613,23 @@ class GitCommitFlow:
             if commit_message == "":
                 continue
 
-            if (
-                len(commit_message) > 0
-                and len(commit_message) < MIN_COMMIT_MESSAGE_SIZE
-            ):
+            if len(commit_message) < MIN_COMMIT_MESSAGE_SIZE:
                 print("Error: the commit message is too short.")
                 print()
-            else:
-                break
+                continue
+
+            if len(commit_message) < SHORT_COMMIT_MESSAGE_SIZE:
+                if not self.confirm(
+                    f"The commit message is short ({len(commit_message)} chars). "
+                    "Confirm commit?"
+                ):
+                    continue
+            elif elapsed_time >= PROMPT_IDLE_TIMEOUT and not self.confirm(
+                "The prompt was idle for more than 3 minutes. Confirm commit?"
+            ):
+                continue
+
+            break
 
         return commit_message
 
