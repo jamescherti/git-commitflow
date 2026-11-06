@@ -311,57 +311,65 @@ class GitCommitFlow:
 
         print(f"{Fore.LIGHTYELLOW_EX}[GIT PUSH] {self.git_repo_dir}{Fore.RESET}")
 
-        max_attempts: int = 2
-        for attempt in range(max_attempts):
-            print()
-            print("[RUN] git push")
-
-            if subprocess.call(["git", "push"]) == 0:
+        # Try pushing until it is fixed
+        while True:
+            max_attempts: int = 2
+            for attempt in range(max_attempts):
                 print()
-                print(
-                    f"{Fore.GREEN}[PUSH] git commit and push were "
-                    f"SUCCESSFUL.{Fore.RESET}"
-                )
-                git_push_commit_refs[remote_url][self.branch] = (
-                    self._get_first_line_cmd("git rev-parse --verify HEAD")
-                )
-                self.cache.set("git_push_commit_refs", git_push_commit_refs)
-                return True
+                print("[RUN] git push")
 
-            print()
-            print(f"{Fore.RED}[PUSH] git push FAILED.{Fore.RESET}")
+                if subprocess.call(["git", "push"]) == 0:
+                    print()
+                    print(
+                        f"{Fore.GREEN}[PUSH] git commit and push were "
+                        f"SUCCESSFUL.{Fore.RESET}"
+                    )
+                    git_push_commit_refs[remote_url][self.branch] = (
+                        self._get_first_line_cmd("git rev-parse --verify HEAD")
+                    )
+                    self.cache.set("git_push_commit_refs", git_push_commit_refs)
+                    return True
 
-            if attempt == max_attempts - 1:
+                print()
+                print(f"{Fore.RED}[PUSH] git push FAILED.{Fore.RESET}")
+
+                if attempt == max_attempts - 1:
+                    break
+
+                print("Attempting to synchronize with the remote...")
+
+                try:
+                    subprocess.check_call(
+                        ["git", "rev-parse", "--symbolic-full-name", "HEAD@{u}"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                    subprocess.check_call(["git", "fetch", "-a"])
+                except subprocess.CalledProcessError as proc_err:
+                    print(f"Error: {proc_err}", file=sys.stderr)
+                    break
+
+                if subprocess.call(["git", "merge", "--ff-only"]) != 0:
+                    git_pull_cmd: list[str] = [
+                        "git",
+                        "pull",
+                        "--rebase",
+                        "--autostash",
+                    ]
+                    if self.confirm(
+                        "Git failed to merge fast-forward. "
+                        "Do you want to run '"
+                        + subprocess.list2cmdline(git_pull_cmd)
+                        + "'?"
+                    ):
+                        if subprocess.call(git_pull_cmd) != 0:
+                            print("Error with 'git pull --rebase'...")
+                            break
+                    else:
+                        break
+
+            if not self.confirm("Push failed. Do you want to try again?"):
                 return False
-
-            print("Attempting to synchronize with the remote...")
-
-            try:
-                subprocess.check_call(
-                    ["git", "rev-parse", "--symbolic-full-name", "HEAD@{u}"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-                subprocess.check_call(["git", "fetch", "-a"])
-            except subprocess.CalledProcessError as proc_err:
-                print(f"Error: {proc_err}", file=sys.stderr)
-                return False
-
-            if subprocess.call(["git", "merge", "--ff-only"]) != 0:
-                git_pull_cmd: list[str] = ["git", "pull", "--rebase", "--autostash"]
-                if self.confirm(
-                    "Git failed to merge fast-forward. "
-                    "Do you want to run '"
-                    + subprocess.list2cmdline(git_pull_cmd)
-                    + "'?"
-                ):
-                    if subprocess.call(git_pull_cmd) != 0:
-                        print("Error with 'git pull --rebase'...")
-                        return False
-                else:
-                    return False
-
-        return False
 
     def git_config_get(self, git_var: str, default_value: str = "") -> str:
         """
