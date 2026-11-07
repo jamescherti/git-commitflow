@@ -2,7 +2,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/git-commitflow)
 
 - Author: James Cherti <[https://www.jamescherti.com/](https://www.jamescherti.com/)>
-- License: GPL
+- License: GPL 3.0 or later
 
 The **[git-commitflow](https://github.com/jamescherti/git-commitflow)** tool is an interactive command-line interface that combines `git add`, `git diff`, `git commit`, and `git push` into a single, mistake-proof workflow.
 
