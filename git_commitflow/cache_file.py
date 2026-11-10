@@ -19,6 +19,7 @@
 """Cache file."""
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -87,6 +88,16 @@ class CacheFile:
             return
 
         self.cache_filename.parent.mkdir(parents=True, exist_ok=True)
-        with self.cache_filename.open("w", encoding="utf-8") as fhandler:
-            json.dump(self._cache, fhandler, indent=2)
+        try:
+            with self.cache_filename.open("w", encoding="utf-8") as fhandler:
+                json.dump(self._cache, fhandler, indent=2)
+        except OSError as err:
+            # A read-only cache file (e.g., root-owned after running with
+            # sudo) must not crash the CLI; warn and continue instead.
+            print(
+                f"Warning: unable to save cache file "
+                f"'{self.cache_filename}': {err}",
+                file=sys.stderr,
+            )
+            return
         self._modified = False
